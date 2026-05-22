@@ -1,11 +1,12 @@
 # Pattern Matcher Agent
 
-**Role**: Scan code against 170+ attack vectors from Pashov + integration-specific patterns.
+**Role**: Scan code against core vectors, custom vectors, live-hack mechanics, and trigger-gated niche-specific vectors.
 
 **Input**:
 - `.sol` files
 - Protocol context from Stage 2 (especially integration_claims)
 - Entry points from Stage 3
+- `trigger_flags` from Stage 3
 
 **Output**: Pattern matches with confidence scores, Solodit references (JSON format)
 
@@ -15,13 +16,22 @@
 
 ### Step 1: Load All Attack Vectors
 
-**Read both attack vector sources**:
+**Always read these vector sources**:
 ```
 references/attack-vectors/attack-vectors.md
 references/attack-vectors/custom-attack-vectors.md
+references/attack-vectors/live-hack-db/live-hack-vectors.md
+references/attack-vectors/vector-schema.md
 ```
 
-**Each vector has format**:
+**Conditionally read this niche-specific source**:
+```
+references/attack-vectors/niche-specific/specialized-vectors.md
+```
+
+Only evaluate niche-specific entries whose `Trigger` field matches the active `trigger_flags` from Stage 3, or whose trigger is `ALWAYS`.
+
+**Vector formats you may encounter**:
 ```
 **N. Vector Title**
 
@@ -29,27 +39,48 @@ references/attack-vectors/custom-attack-vectors.md
 - **FP:** (False Positive check) - When this pattern is SAFE
 ```
 
-**Action**: Build one internal pattern database by combining patterns from both files.
+Or:
+```
+### LV-001: Title
+**Trigger**: ORACLE | TOKEN_FLOW
+**Summary**: ...
+**Detection Clues**:
+- ...
+**False Positive Checks**:
+- ...
+```
+
+**Action**:
+- Build one internal pattern database from the always-on sources
+- Add only the niche-specific entries whose trigger expression evaluates true
+- Preserve source metadata so the report can say where a pattern came from
+- Evaluate `Trigger` using this grammar only:
+  - `ALWAYS`
+  - `FLAG_A`
+  - `FLAG_A | FLAG_B`
+  - `FLAG_A & FLAG_B`
+- Apply dedupe by `(mechanic, code location, exploit surface)`:
+  - keep the highest-precedence vector as primary
+  - merge supporting references and example exploits from lower-precedence duplicates
+
+**Layer precedence**:
+1. `custom-attack-vectors.md`
+2. `niche-specific/specialized-vectors.md`
+3. `live-hack-db/live-hack-vectors.md`
+4. `attack-vectors.md`
 
 ---
 
-### Step 2: Load Integration-Specific Patterns
+### Step 2: Optional Supporting References
 
-**Based on integration_claims from Stage 2**:
+If an active vector points at deeper background material, read supporting references as needed:
+- `references/integrations/erc20-variants.md`
+- `references/integrations/chainlink-oracles.md`
 
-**If protocol claims ERC20 support**:
-```
-Read: references/integrations/erc20-variants.md
-Patterns: 6 ERC20 variant issues (USDT, DAI, fee-on-transfer, rebasing, pausable, blacklist)
-```
+These files are supporting research references, not standalone scan layers.
 
-**If protocol uses Chainlink oracles**:
-```
-Read: references/integrations/chainlink-oracles.md
-Patterns: 6 oracle integration issues (staleness, decimals, L2 sequencer, etc.)
-```
-
-**Total Patterns**: 170 (Pashov) + 6-12 (integration-specific) = 176-182 patterns
+**Total Patterns**: Variable.
+Base coverage comes from core + custom + live-hack-db vectors, then grows when niche-specific triggers activate.
 
 ---
 
@@ -71,7 +102,7 @@ references/safe-patterns.md
 
 ### Step 4: Scan Code for Each Pattern
 
-**For EACH of the 176+ patterns**:
+**For EACH active pattern**:
 
 1. **Check if pattern exists in code**:
    - Use `Grep` to search for pattern indicators
@@ -88,6 +119,7 @@ references/safe-patterns.md
    - Extract code snippet
    - Note file and line number
    - Assign preliminary confidence score
+   - Record `source_layer` (`core`, `custom`, `live-hack-db`, `niche-specific`)
 
 **Example Scan Process**:
 
@@ -116,7 +148,7 @@ Step 4: MATCH! Record finding
 
 ### Step 5: Assign Confidence Scores (Using judging.md)
 
-**Load**: `references/judging.md` (Pashov's confidence methodology)
+**Load**: `references/judging.md` (confidence methodology)
 
 **Base Confidence**: Start at 100
 

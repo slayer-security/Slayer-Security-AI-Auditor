@@ -3,14 +3,25 @@
 Use this guide when adding new entries to:
 `references/attack-vectors/custom-attack-vectors.md`
 
+Canonical field definitions live in:
+`references/attack-vectors/vector-schema.md`
+
+If the pattern is:
+- stable and broadly reusable: put it in `attack-vectors.md`
+- team/project-specific: put it in `custom-attack-vectors.md`
+- derived from real incident research: put it in `live-hack-db/live-hack-vectors.md`
+- highly trigger-specific and best used only on certain protocol surfaces: put it in `niche-specific/specialized-vectors.md`
+
 ---
 
 ## Pattern Template
 
 Copy this template and replace placeholders:
 
-```markdown
+````markdown
 ### CP-XXX: [Title]
+
+**Trigger**: `ALWAYS` or `ORACLE | TOKEN_FLOW`
 
 **Summary**: [One-line description of the vulnerability]
 
@@ -36,7 +47,7 @@ Copy this template and replace placeholders:
 - [Another keyword or pattern]
 
 **Reference**: [Link to writeup, Solodit issue, or documentation]
-```
+````
 
 ---
 
@@ -47,3 +58,4 @@ Copy this template and replace placeholders:
 3. Include both vulnerable and safe examples whenever possible.
 4. Add concrete detection triggers (keywords, function names, call patterns).
 5. Include at least one reference URL for validation context.
+6. Use `Trigger: ALWAYS` unless the pattern should only run on a clearly defined protocol surface.

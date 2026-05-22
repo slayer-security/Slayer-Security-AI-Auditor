@@ -1,6 +1,8 @@
 # Custom Attack Vectors
 
-User-defined attack vectors scanned during Stage 4 pattern matching.
+Team/user-defined attack vectors scanned during Stage 4 pattern matching.
+
+These vectors are always loaded.
 
 For authoring instructions and template, see:
 `references/attack-vectors/how-to-add-custom-pattern.md`
@@ -10,6 +12,8 @@ For authoring instructions and template, see:
 ## User-Added Patterns
 
 ### CP-001: [Your First Pattern Title]
+
+**Trigger**: `ALWAYS`
 
 **Summary**: [One-line description]
 

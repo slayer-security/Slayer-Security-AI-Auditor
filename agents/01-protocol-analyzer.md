@@ -356,7 +356,7 @@ Before finishing, verify:
 - Be thorough - missing a claim means missing potential integration bugs
 
 **Invariants are CRITICAL**:
-- These will be used in Stage 6 to verify if bugs actually break system rules
+- These will be used in Stage 7 to verify if bugs actually break system rules
 - Clear invariants = better false positive filtering
 - If unsure, err on side of including more invariants
 

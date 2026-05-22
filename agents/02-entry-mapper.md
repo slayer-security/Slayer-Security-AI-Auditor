@@ -6,7 +6,7 @@
 - `.sol` files
 - Protocol context from Stage 2 (especially invariants)
 
-**Output**: Entry point map + Function-State Matrix + Coupled State Pairs (JSON format)
+**Output**: Entry point map + Function-State Matrix + Coupled State Pairs + trigger_flags (JSON format)
 
 ---
 
@@ -321,6 +321,61 @@ State Variable: totalSupply
 
 ---
 
+### Step 7: Derive Trigger Flags For Stage 4
+
+Compute a `trigger_flags` object that Stage 4 can use to selectively load niche-specific vectors.
+
+**Required Flags**:
+- `ORACLE`
+- `FLASH_LOAN`
+- `CROSS_CHAIN_MSG`
+- `STORAGE_LAYOUT`
+- `TOKEN_FLOW`
+- `MIGRATION`
+- `PRIVILEGED_ROLE`
+- `SHARE_ACCOUNTING`
+- `SIGNATURE_AUTH`
+
+**How To Set Flags**:
+
+- `ORACLE`:
+  Enable if code calls price oracles (`latestRoundData`, TWAP helpers, custom price adapters).
+- `FLASH_LOAN`:
+  Enable if flash loan entry points/callbacks exist, or if accounting is clearly balance-dependent and atomically exploitable.
+- `CROSS_CHAIN_MSG`:
+  Enable if contracts receive, verify, relay, or consume cross-chain messages/proofs.
+- `STORAGE_LAYOUT`:
+  Enable if proxies, upgradeability, `delegatecall`, storage gaps, or manual slot usage are present.
+- `TOKEN_FLOW`:
+  Enable if protocol moves, mints, burns, escrows, or settles tokens.
+- `MIGRATION`:
+  Enable if contracts use `initialize`, `reinitialize`, versioned upgrades, migrations, legacy adapters, or V2/V3 paths.
+- `PRIVILEGED_ROLE`:
+  Enable if access extends beyond fully public calls and includes owner/admin/keeper/operator/governance/multisig actions.
+- `SHARE_ACCOUNTING`:
+  Enable if protocol uses shares, vault accounting, receipt tokens, donation-sensitive balances, or exchange-rate math.
+- `SIGNATURE_AUTH`:
+  Enable if protocol verifies signatures, RFQs, orders, permits, typed data, or uses `ecrecover`.
+
+**Output Format**:
+```json
+{
+  "trigger_flags": {
+    "ORACLE": {"enabled": true, "evidence": ["oracle.latestRoundData()"]},
+    "FLASH_LOAN": {"enabled": false, "evidence": []},
+    "CROSS_CHAIN_MSG": {"enabled": false, "evidence": []},
+    "STORAGE_LAYOUT": {"enabled": true, "evidence": ["UUPSUpgradeable"]},
+    "TOKEN_FLOW": {"enabled": true, "evidence": ["token.transferFrom()", "_mint()"]},
+    "MIGRATION": {"enabled": false, "evidence": []},
+    "PRIVILEGED_ROLE": {"enabled": true, "evidence": ["onlyOwner"]},
+    "SHARE_ACCOUNTING": {"enabled": true, "evidence": ["convertToShares()", "totalAssets()"]},
+    "SIGNATURE_AUTH": {"enabled": false, "evidence": []}
+  }
+}
+```
+
+---
+
 ## Critical Analysis: Desync Vulnerability Detection
 
 **Look for these RED FLAGS**:
@@ -374,6 +429,7 @@ function claim() {
   "access_control_map": [...],
   "inheritance": [...],
   "state_dependency_graph": [...],
+  "trigger_flags": {...},
   "preliminary_red_flags": [
     {
       "type": "asymmetric-update",
@@ -395,6 +451,7 @@ Before finishing:
 - [ ] Coupled state pairs identified (at least 2-3)
 - [ ] Access control modifiers documented
 - [ ] Inheritance hierarchy mapped
+- [ ] Trigger flags derived with concrete evidence
 - [ ] Preliminary red flags noted
 
 ---
@@ -403,7 +460,7 @@ Before finishing:
 
 **Coupled State Pairs are CRITICAL for Stage 5**:
 - These will be used to detect state desync bugs
-- This is how Nemesis-style deep analysis works
+- This is how deep state analysis works
 - Missing coupled pairs = missing entire bug classes
 
 **Function-State Matrix enables**:

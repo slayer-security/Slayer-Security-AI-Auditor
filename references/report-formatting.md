@@ -42,6 +42,9 @@ Save the report to `assets/findings/{project-name}-pashov-ai-audit-report-{times
 
 `ContractName.functionName` · Confidence: 95
 
+**Source Layer**
+`core` / `custom` / `live-hack-db` / `niche-specific`
+
 **Description**
 <The vulnerable code pattern and why it is exploitable, in 1 short sentence>
 
@@ -74,13 +77,13 @@ Save the report to `assets/findings/{project-name}-pashov-ai-audit-report-{times
 
 Findings List
 
-| # | Confidence | Title |
-|---|---|---|
-| 1 | [95] | <title> |
-| 2 | [82] | <title> |
-| | | **Below Confidence Threshold** |
-| 3 | [75] | <title> |
-| 4 | [60] | <title> |
+| # | Confidence | Source | Title |
+|---|---|---|---|
+| 1 | [95] | niche-specific | <title> |
+| 2 | [82] | live-hack-db | <title> |
+| | | | **Below Confidence Threshold** |
+| 3 | [75] | core | <title> |
+| 4 | [60] | custom | <title> |
 
 ---
 

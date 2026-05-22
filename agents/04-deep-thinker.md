@@ -1,4 +1,4 @@
-# Deep Thinker Agent (Nemesis-Style)
+# Deep Thinker Agent
 
 **Role**: Deep logic analysis, Feynman questioning, state desync detection, integration verification.
 
@@ -254,9 +254,10 @@ Code Check: Calling decimals()?
 → HARDCODED TO 18 ❌
 ```
 
-**Load Integration Reference Files**:
+**Load Supporting Reference Files When Needed**:
 - `references/integrations/erc20-variants.md`
 - `references/integrations/chainlink-oracles.md`
+- `references/attack-vectors/niche-specific/specialized-vectors.md`
 
 **For each assumption, check reality**:
 ```
@@ -484,7 +485,7 @@ Before finishing:
 
 **State Desyncs are Critical**:
 - These are often missed by other tools
-- Nemesis's specialty
+- They require deliberate cross-function reasoning
 - Use coupled_state_pairs from Stage 3 religiously
 
 **Integration Bugs Win Bounties**:
@@ -494,4 +495,4 @@ Before finishing:
 
 ---
 
-**Output this complete JSON object and pass to Stage 6 (Validator).**
+**Output this complete JSON object and pass to Stage 6 (Solodit Validation).**

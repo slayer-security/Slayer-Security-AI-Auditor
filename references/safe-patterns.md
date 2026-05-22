@@ -500,6 +500,5 @@ When you encounter a false positive:
 1. Document the pattern here
 2. Explain why it's safe
 3. Add detection rules
-4. Update MEMORY.md
 
 This file should grow over time as new safe patterns are discovered.
