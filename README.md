@@ -294,7 +294,14 @@ If unavailable, the skill continues with local reference files and notes "Solodi
 
 ### Custom Attack Patterns
 
-Add your own patterns to `references/attack-vectors/custom-patterns.md`:
+The pattern matcher scans both files during Stage 4:
+- `references/attack-vectors/attack-vectors.md` (core vectors)
+- `references/attack-vectors/custom-attack-vectors.md` (team/user vectors)
+
+To add custom vectors, follow:
+- `references/attack-vectors/how-to-add-custom-pattern.md`
+
+Then append your new entry to `references/attack-vectors/custom-attack-vectors.md`:
 
 ```markdown
 ### CP-001: Sandwich Attack on Swap
@@ -325,11 +332,9 @@ slayer-security-audit-skill/
 │   └── 06-adversarial-validator.md
 └── references/
     ├── attack-vectors/
-    │   ├── attack-vectors-1.md (42 vectors)
-    │   ├── attack-vectors-2.md (42 vectors)
-    │   ├── attack-vectors-3.md (42 vectors)
-    │   ├── attack-vectors-4.md (44 vectors)
-    │   └── custom-patterns.md (user-defined)
+    │   ├── attack-vectors.md (core vectors)
+    │   ├── custom-attack-vectors.md (user-defined)
+    │   └── how-to-add-custom-pattern.md (authoring guide)
     ├── integrations/
     │   ├── erc20-variants.md (24 patterns)
     │   ├── chainlink-oracles.md
@@ -378,8 +383,9 @@ MIT License - See LICENSE file for details.
 ## Contributing
 
 1. Fork the repository
-2. Add patterns to `references/attack-vectors/custom-patterns.md`
-3. Submit PR with validation test cases
+2. Follow `references/attack-vectors/how-to-add-custom-pattern.md`
+3. Add patterns to `references/attack-vectors/custom-attack-vectors.md`
+4. Submit PR with validation test cases
 
 ---
 

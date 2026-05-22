@@ -197,10 +197,9 @@ Output Required: Pattern matches with confidence scores
 
 **What This Agent Does**:
 1. **Load Attack Vectors**:
-   - Read `references/attack-vectors/attack-vectors-1.md` (vectors 1-42)
-   - Read `references/attack-vectors/attack-vectors-2.md` (vectors 43-84)
-   - Read `references/attack-vectors/attack-vectors-3.md` (vectors 85-126)
-   - Read `references/attack-vectors/attack-vectors-4.md` (vectors 127-170)
+   - Read `references/attack-vectors/attack-vectors.md` (core attack vectors)
+   - Read `references/attack-vectors/custom-attack-vectors.md` (user-defined vectors)
+   - Scan against BOTH files in the same pattern-matching stage
 
 2. **Load Integration Patterns**:
    - Read `references/integrations/erc20-variants.md`
@@ -680,7 +679,7 @@ Before starting each stage, verify:
 - [ ] Stage 1: Filtered noise files correctly
 - [ ] Stage 2: Loaded protocol analyzer agent
 - [ ] Stage 3: Loaded entry mapper agent
-- [ ] Stage 4: Loaded pattern matcher agent + read 170 attack vectors
+- [ ] Stage 4: Loaded pattern matcher agent + read `attack-vectors.md` and `custom-attack-vectors.md`
 - [ ] Stage 5: Loaded deep thinker agent
 - [ ] Stage 6: Loaded validator agent + applied 5-level verification + checked known issues
 - [ ] Stage 7: Loaded adversarial validator + challenged all findings
@@ -719,7 +718,7 @@ If `@lyuboslavlyubenov/search-solodit-mcp` is available:
 3. Note limitation in final report
 
 ### If MCP unavailable:
-- Use local references only (still 170+ attack vectors available)
+- Use local references only (including `attack-vectors.md` and `custom-attack-vectors.md`)
 - Note in report: "Audit performed without real-time Solodit intelligence"
 
 ### If README.md missing:

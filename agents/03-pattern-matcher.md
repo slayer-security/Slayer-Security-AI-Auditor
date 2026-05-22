@@ -15,12 +15,10 @@
 
 ### Step 1: Load All Attack Vectors
 
-**Read ALL attack vector files**:
+**Read both attack vector sources**:
 ```
-references/attack-vectors/attack-vectors-1.md  (Vectors 1-42)
-references/attack-vectors/attack-vectors-2.md  (Vectors 43-84)
-references/attack-vectors/attack-vectors-3.md  (Vectors 85-126)
-references/attack-vectors/attack-vectors-4.md  (Vectors 127-170)
+references/attack-vectors/attack-vectors.md
+references/attack-vectors/custom-attack-vectors.md
 ```
 
 **Each vector has format**:
@@ -31,7 +29,7 @@ references/attack-vectors/attack-vectors-4.md  (Vectors 127-170)
 - **FP:** (False Positive check) - When this pattern is SAFE
 ```
 
-**Action**: Build internal database of all 170 patterns
+**Action**: Build one internal pattern database by combining patterns from both files.
 
 ---
 

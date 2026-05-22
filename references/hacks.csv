@@ -1,0 +1,294 @@
+Name,Date,Amount lost,Chains,Classification,Technique,Language
+MAP Protocol,1779235200,110000,"Ethereum, BSC",Protocol Logic,Infinite Mint and Dump,Solidity
+RetoSwap,1779235200,2700000,Monero,Protocol Logic,ACK Message Frontrun Exploit,C++
+HermesVault,1779148800,30000,Algorand,Protocol Logic,Rekeying Attack,Javascript
+SEA Token,1778976000,153000,Arbitrum,Protocol Logic,Flashloan Price Manipulation,Solidity
+Verus-Ethereum Bridge,1778976000,11500000,Ethereum,Protocol Logic,Bridge Verification Bypass,Solidity
+Adshares,1778889600,628000,Ethereum,Protocol Logic,Bridge Verification Bypass,Solidity
+Thorchain DEX,1778803200,10000000,"Bitcoin, Ethereum, Base, BSC",Protocol Logic,Vault Churn Address Poisoning,
+Transit Finance,1778630400,1880000,Tron,Protocol Logic,Deprecated Smart Contract Exploit,Solidity
+Aurellion,1778544000,456000,Arbitrum,Protocol Logic,Uninitialized Proxy Exploit,Solidity
+SQ Protocol,1778544000,346000,BSC,Protocol Logic,Acces Control Exploit,Solidity
+INK Finance,1778457600,140000,Polygon,Protocol Logic,Whitelisted Address Impersonation,Solidity
+Renegade,1778371200,209000,Arbitrum,Protocol Logic,Unprotected Initializer Exploit,Solidity
+TrustedVolumes,1778112000,6700000,Ethereum,Protocol Logic,Forged RFQ Orders,Solidity
+Ekubo,1777939200,1400000,Ethereum,Protocol Logic,Improper Access Control Exploit,
+SmartCredit,1777852800,72000,Ethereum,Protocol Logic,Flashloan Exploit,Solidity
+Sharwa.Finance,1777593600,32850,Arbitrum,Protocol Logic,Oracle Price Manipulation,Solidity
+Bisq,1777593600,858000,Bitcoin,Protocol Logic,Fake Bisq V1 Client Hack,
+Wasabi Perps,1777507200,5500000,"Ethereum, Base, Berachain, Blast",Protocol Logic,Admin Key Compromised,Solidity
+Aftermath Perps,1777420800,1140000,Sui,Protocol Logic,Fee-Accounting Logic Flaw,Move
+Sweat Foundation,1777420800,3500000,Near,Protocol Logic,Refund_first & Refund_second Logic Exploit,Rust
+Syndicate,1777420800,380000,Base,Protocol Logic,Commons Bridge Exploit,Solidity
+Quant,1777334400,138000,Ethereum,Protocol Logic,Access Control Exploit,Solidity
+JUDAO,1777334400,228000,BSC,Protocol Logic,Flashloan Exploit,Solidity
+Singularity Finance,1777248000,413000,Base,Protocol Logic,Oracle Misconfiguration Exploit,Solidity
+ZetaChain,1777248000,300000,"Ethereum, Base, Polygon, Arbitrum, Avalanche, BSC",Protocol Logic,GatewayEVM Contracts Exploit,Solidity
+Scallop Lend,1777161600,150000,Sui,Protocol Logic,Deprecated V2 Rewards Contract,Move
+Litecoin,1777161600,0,Litecoin,Protocol Logic,Zero-Day Bug & DDoS Exploit,C++
+Purrlend,1777075200,1500000,"MegaETH, Hyperliquid L1",Protocol Logic,Fake Bridge Address,Solidity
+Giddy,1776902400,1300000,Ethereum,Protocol Logic,Incomplete EIP-712 Signature Coverage,Solidity
+Kipseli,1776816000,80000,Base,Protocol Logic,Flawed Quoting Logic,Solidity
+Volo Vault,1776729600,3500000,Sui,Protocol Logic,Admin Key Compromised,Move
+Thetanuts Finance,1776643200,50000,Ethereum,Protocol Logic,First Depositor Attack,Solidity
+Juicebox V3,1776643200,52000,Ethereum,Protocol Logic,borrowFrom Spoof Attack,Solidity
+Rhea Lend,1776297600,18400000,Near,Protocol Logic,Fake Collateral Exploit,Solidity
+MONA,1776038400,60950,BSC,Protocol Logic,BurnAddress Accounting Exploit,Solidity
+Dango,1776038400,410000,Dango,Protocol Logic,Donate Negative Amounts Hack,Solidity
+SubQuery Network,1775952000,60000,Base,Protocol Logic,Acces Control Exploit,Solidity
+Hyperbridge,1775952000,2500000,"Ethereum, Base, BSC, Arbitrum",Protocol Logic,Fake State Proof,Solidity
+Aethir,1775692800,423000,BSC,Protocol Logic,Acces Control Exploit,Solidity
+BSC TMM/USDT,1775260800,1665000,BSC,Protocol Logic,Reserve Manipulation Attack,Solidity
+LML/USDT staking protocol,1774915200,950000,BSC,Protocol Logic,Price Manipulation Attack,Solidity
+GoonFi,1774656000,254000,Solana,Protocol Logic,Mispricing arbitrage,Rust
+Cyrus Finance,1774137600,5000000,BSC,Protocol Logic,Flashloan Pool Shares Exploit,Solidity
+dTRINITY dLEND,1773705600,257000,Ethereum,Protocol Logic,Deposit Inflation Attack,Solidity
+Venus Core Pool,1773532800,3700000,BSC,Protocol Logic,Donation Attack,Solidity
+Goose Finance,1773446400,8435,BSC,Protocol Logic,Share Accounting Flaw,Solidity
+Stake DAO,1773273600,176000,"Arbitrum, Base",Protocol Logic,Oracle Message Spoofing,Solidity
+Gondi V3,1773014400,230000,Ethereum,Protocol Logic,PurchaseBundler Exploit,Solidity
+Molt EVM,1772841600,127000,Base,Protocol Logic,onlySpawnerToken Modifier Hack,Solidity
+SolvBTC,1772755200,2700000,Ethereum,Protocol Logic,Mint Reserves Logic Exploit,Solidity
+Curve LlamaLend,1772409600,240000,Ethereum,Protocol Logic,Donation Attack,Solidity
+FOOM Cash,1772409600,2260000,"Ethereum, Base",Protocol Logic,Fake Proof Spam,Solidity
+Wise Lending V2,1772236800,66000,"Arbitrum, Ethereum",Protocol Logic,Flashloan Exploit,Solidity
+Ploutos Money,1772064000,390000,Ethereum,Protocol Logic,Misconfigured Oracle Exploit,Solidity
+DGLD,1771804800,0,Base,Protocol Logic,Infinite Mint and Dump,Solidity
+Blend Pools V2,1771718400,10970000,Stellar,Protocol Logic,Price Oracle Manipulation,
+Veil Cash,1771632000,5000,Base,Protocol Logic,misconfigured Groth16 verifier,Solidity
+Moonwell Lending,1771113600,1780000,Base,Protocol Logic,cbETH Collateral Exploit,Solidity
+CrossCurve,1769904000,3000000,,Protocol Logic,Spoofed Cross-Chain Messages,
+Revert Lend,1769644800,50000,Base,Protocol Logic,Staked Collateral Exploit,Solidity
+Matcha,1769299200,13430000,"Base, Ethereum",Protocol Logic,Unlimited Approval Exploit,Solidity
+Aperture LM,1769299200,3200000,"Ethereum, Base, BSC",Protocol Logic,,Solidity
+Saga,1768953600,7000000,Saga,Protocol Logic,Infinite Mint and Dump,Solidity
+Makina,1768780800,4200000,Ethereum,Protocol Logic,Flashloan Price Oracle Attack,Solidity
+YO Protocol,1768262400,3730000,Ethereum,Protocol Logic,Slippage Exploit,Solidity
+Truebit,1767830400,26400000,Ethereum,Protocol Logic,Bonding Curve Exploit,Solidity
+Polycule,1767744000,230000,Polygon,Protocol Logic,,Solidity
+Fusion by IPOR,1767657600,336000,Arbitrum,Protocol Logic,EIP-7702 Delegation Exploit,Solidity
+TMX TRIBE,1767571200,1400000,Arbitrum,Protocol Logic,Mint & Stake Loop Exploit,Solidity
+PRXVT,1767225600,97000,Base,Protocol Logic,Sybil Attack with CREATE2 Addresses,Solidity
+Unleash Protocol,1767052800,3900000,Story,Protocol Logic,Multisig Governance Hack,Solidity
+MSCST,1766880000,129900,BSC,Protocol Logic,Atomic Sandwich Attack,Solidity
+Flow,1766793600,3900000,Flow,Protocol Logic,mint-and-dump Hack,Solidity
+Rari Capital,1766016000,2000000,Ethereum,Protocol Logic,Uninitialized Proxy Hijack,Solidity
+FutureSwap,1765843200,270000,Ethereum,Protocol Logic,Flashloan Governance Attack,Solidity
+Yearn Finance,1765843200,300000,Ethereum,Protocol Logic,misconfigured Fulcrum sUSD strategy,Solidity
+Mars Perps,1765670400,960000,Neutron,Protocol Logic,Thin-Market Skew Exploit,Rust
+Ribbon,1765497600,2700000,Ethereum,Protocol Logic,Private Key Compromised,Solidity
+0G Labs,1765411200,516000,0G,Protocol Logic,emergencyWithdraw Function Exploit,Solidity
+US Permissionless Dollar,1764806400,1000000,Ethereum,Protocol Logic,"""CPIMP"" proxy front-run",Solidity
+Yearn Ether,1764460800,9000000,Ethereum,Protocol Logic,yETH stablepool Exploit,Solidity
+Port3 Network,1763856000,166000,BSC,Protocol Logic,Infinite Mint and Dump,Solidity
+Impermax V3,1762819200,380000,Base,Protocol Logic,Zero-Rate Hack,Solidity
+DIMO,1762473600,40000,Ethereum,Protocol Logic,Private Key Compromised,
+Moonwell Lending,1762214400,1000000,"Base, Optimism",Protocol Logic,Oracle Price Feed Manipulation,Solidity
+Balancer V2,1762128000,128000000,"Ethereum, Arbitrum, Base, Polygon, Sonic, Optimism",Protocol Logic,Composable Stable Pools Exploit,Solidity
+Sharwa.Finance,1760918400,146000,Arbitrum,Protocol Logic,Price Manipulation Attack,Solidity
+Typus Perp,1760486400,3400000,Sui,Protocol Logic,TLP Contract Exploit,Move
+Astera.fi,1759968000,573000,Linea,Protocol Logic,Oracle Price Feed Manipulation,Solidity
+Abracadabra Spell,1759536000,1700000,Ethereum,Protocol Logic,Sequential State Manipulation Exploit,Solidity
+Hyperdrive HL,1758931200,773000,Hyperliquid L1,Protocol Logic,Router Exploit,Solidity
+UXLINK,1758499200,11300000,"Ethereum, Arbitrum",Protocol Logic,Delegatecall Exploit,Solidity
+Shibarium,1757721600,3000000,Shibarium,Protocol Logic,Validator Stake Manipulation by Flashloan,Solidity
+Kame Aggregator,1757635200,1300000,Sei,Protocol Logic,swap() Function Flaw,
+Nemo Yield Trading,1757289600,2400000,Sui,Protocol Logic,Price Oracle Manipulation,Move
+Bunni V2,1756771200,8400000,"Ethereum, Unichain",Protocol Logic,Liquidity Distribution Function Exploit,Solidity
+Cozy V2,1756512000,427000,Optimism,Protocol Logic,Insufficient Sender Verification Exploit,Solidity
+BetterBank,1756166400,5000000,PulseChain,Protocol Logic,Infinite Mint and Dump,Solidity
+Panoptic V1.1,1756080000,0,"Base, Unichain, Ethereum",Protocol Logic,,Solidity
+Odin.Fun,1754956800,7000000,ICP,Protocol Logic,Liquidity Manipulation Exploit,Motoko
+numa.,1754784000,320000,Sonic,Protocol Logic,NumaVault Exploit,Solidity
+SuperRare,1753660800,730000,Ethereum,Protocol Logic,updateMerkleRoot Access Control Exploit,Solidity
+Arcadia V2,1752537600,2500000,Base,Protocol Logic,Rebalancer contract reentrancy hack,Solidity
+Kinto Bridge,1752105600,1550000,Arbitrum,Protocol Logic,ERC1967Proxy Backdoor Hijack,Solidity
+GMX V1 Perps,1752019200,42000000,Arbitrum,Protocol Logic,Re-entrancy Exploit,Solidity
+Silo Finance,1750809600,546000,Ethereum,Protocol Logic,fillQuote silo.borrow() Exploit,Solidity
+Resupply,1750809600,9600000,Ethereum,Protocol Logic,Price Oracle Manipulation,Solidity
+ForceBridge,1749168000,3900000,Nervos,Protocol Logic,Acces Control Exploit,Rust
+ALEX,1749168000,8373000,Stacks,Protocol Logic,malicious transfer() method,Clarity
+Cork V1,1748390400,12000000,Ethereum,Protocol Logic,Access control bypass via hook,Solidity
+Usual USD0,1748304000,43000,Ethereum,Protocol Logic,Arbitration Exploit,Solidity
+Dexodus Finance,1748217600,300000,Base,Protocol Logic,Price Manipulation Attack,Solidity
+Cetus CLMM,1747872000,223000000,Sui,Protocol Logic,Spoof Token Exploit,Move
+Zunami Protocol,1747267200,500000,Ethereum,Protocol Logic,withdrawStuckToken() exploit,Solidity
+Mobius Token,1746921600,2160000,BSC,Protocol Logic,Decimal Miscalculation Exploit,Solidity
+LND,1746748800,1300000,"Sonic, Hyperliquid L1",Protocol Logic,,
+Loopscale,1745625600,5800000,Solana,Protocol Logic,Price Oracle Manipulation,Rust
+Impermax V3,1745625600,300000,Base,Protocol Logic,Flashloan Exploit,Solidity
+Bitcoin Mission,1745280000,1300000,Arbitrum,Protocol Logic,overPaper Function Exploit,Solidity
+KiloEx,1744588800,7500000,"BSC, Base, Taiko",Protocol Logic,Price Oracle Manipulation,Solidity
+Tenderize V2,1743984000,10850,Ethereum,Protocol Logic,Proxy Upgrade Skim,Solidity
+UPCX,1743465600,0,Ethereum,Protocol Logic,Upgraded ProxyAdmin + withdrawByAdmin Hack,Solidity
+SIR,1743292800,355000,Ethereum,Protocol Logic,Transient storage collision,Solidity
+Venus Core Pool,1743206400,902000,zkSync Era,Protocol Logic,Donation Attack,Solidity
+Abracadabra Spell,1742860800,13000000,Arbitrum,Protocol Logic,,Solidity
+1inch,1741305600,5000000,Ethereum,Protocol Logic,Calldata underflow and resolver hijack,Solidity
+Hegic(old contract),1740787200,94000,Ethereum,Protocol Logic,Unlimited repeated withdrawal exploit,Solidity
+Infini,1740355200,49500000,Ethereum,Protocol Logic,Dev Privilege Oversight Exploit,
+Bybit,1740096000,1400000000,Ethereum,Protocol Logic,Safe Multisig wallet Phishing Exploit,Solidity
+four.meme,1739232000,183000,BSC,Protocol Logic,Liquidity Pool Exploit,Solidity
+zkLend,1739232000,9550000,Starknet,Protocol Logic,Empty Market Exploit,Cairo
+Ionic Protocol,1738627200,4000000,Mode,Protocol Logic,Fake Collateral Exploit,Solidity
+Sirio Finance,1738368000,2000000,Hedera,Protocol Logic,Flashloan Exploit,Solidity
+Unilend V2,1736640000,197600,Ethereum,Protocol Logic,Redeem Process Exploit,Solidity
+MoonHacker,1735776000,300000,Optimism,Protocol Logic,Unchecked FlashLoan Approve Exploit,Solidity
+Fegex,1735430400,900000,"Ethereum, BSC, Base",Protocol Logic,Missing Access Control,Solidity
+GemPad,1734393600,2000000,"Ethereum, Base, BSC",Protocol Logic,Reentrancy,
+BTC24H,1734307200,85700,Polygon,Protocol Logic,Acces Control Exploit,
+Clober Liquidity Vault,1733788800,500000,Base,Protocol Logic,Reentrancy,
+Vestra DAO,1733270400,500000,Ethereum,Protocol Logic,Staking Logic Exploit,Solidity
+Clipper,1733011200,450000,"Optimism, Base",Protocol Logic,API Signature Exploit,
+Spectral Labs,1733011200,200000,Ethereum,Protocol Logic,Bonding Curve Exploit,
+Tectonic,1731888000,0,Cronos,Protocol Logic,Price Oracle Attack,
+Polter Finance,1731715200,12000000,Fantom,Protocol Logic,Flashloan Price Oracle Attack,
+ThalaSwap,1731628800,25500000,Aptos,Protocol Logic,Drained Liquidity Pool,Move
+zkFinance,1731283200,200000,zkSync Era,Protocol Logic,Oracle Misconfiguration Exploit,
+DeltaPrime,1731283200,4800000,"Arbitrum, Avalanche",Protocol Logic,Debt Swap Exploit,Solidity
+M2 Exchange,1730332800,13700000,"Ethereum, Solana, Bitcoin",Protocol Logic,Access Control Exploit,
+Tapioca DAO,1729209600,4700000,Arbitrum,Protocol Logic,Private Key Compromised (Social Engineering),Solidity
+Radiant V2,1729036800,53000000,"BSC, Arbitrum",Protocol Logic,Access Control Exploit,Solidity
+LeadBlock's Morpho Blue Market,1728864000,250000,Ethereum,Protocol Logic,Oracle Misconfiguration Exploit,Solidity
+Lava,1728000000,130000,Arbitrum,Protocol Logic,Flashloan Exploit,Solidity
+uniBTC,1727308800,1700000,Ethereum,Protocol Logic,Minting Logic Exploit,Solidity
+Onyx V2,1727308800,4000000,Ethereum,Protocol Logic,Liquidation Logic Exploit,Solidity
+OcelotDex,1726790400,4900000,Ethereum,Protocol Logic,Infinite Mint and Dump,Solidity
+Banana Gun,1726704000,3000000,Ethereum,Protocol Logic,Front-end vulnerability,
+DeltaPrime,1726444800,5980000,Arbitrum,Protocol Logic,Private Key Compromised (Unknown Method),Solidity
+WXETA,1726444800,110000,"Ethereum, BSC",Protocol Logic,Access Control Exploit,Solidity
+Penpie,1725321600,27000000,Ethereum,Protocol Logic,Reentrancy,Solidity
+PolyNetwork,1723420800,5000000,PolyNetwork,Protocol Logic,Reentrancy,Solidity
+Nexera,1722988800,1800000,Ethereum,Protocol Logic,Ownership Override Attack,Solidity
+Ronin Bridge,1722902400,12000000,Ethereum,Protocol Logic,MEV bot manipulation exploit,Solidity
+Convergence,1722470400,210000,Ethereum,Protocol Logic,Missing Input Validation,Solidity
+DeltaPrime,1721692800,1000000,Arbitrum,Protocol Logic,,Solidity
+Rho Markets,1721347200,7600000,Scroll,Protocol Logic,Price Oracle Manipulation,Solidity
+LiFi Finance,1721088000,9730000,"zkSync Era, Linea, Metis",Protocol Logic,Router Exploit via Infinite Approvals,Solidity
+Minterest,1721001600,1400000,Mantle,Protocol Logic,Reentrancy,Solidity
+Dough Finance,1720742400,1960000,Ethereum,Protocol Logic,Unvalidated call data exploit,Solidity
+OKX NFT Aggregator,1718841600,14000,BSC,Protocol Logic,Access Control Exploit,Solidity
+Holograph,1718236800,6700000,Ethereum,Protocol Logic,Infinite Mint and Dump,Solidity
+YOLO Games,1718064000,1500000,Blast,Protocol Logic,Access Control Exploit,Solidity
+Loopring,1717891200,5000000,Loopring,Protocol Logic,Guardian 2FA service exploit,
+Velocore V2,1717286400,6800000,"Linea, zkSync Era",Protocol Logic,Fee Overflow Exploit,Solidity
+Gala,1716163200,22000000,Ethereum,Protocol Logic,Infinite Mint and Dump,Solidity
+Pike V1,1714435200,1600000,"Ethereum, Optimism, Arbitrum",Protocol Logic,Storage Misalignment Exploit,Solidity
+Yield Protocol,1714435200,181000,Arbitrum,Protocol Logic,Balance Disparity Exploit,Solidity
+Magpie Protocol,1713830400,129000,"Ethereum, Polygon, BSC, Blast, Avalanche, Arbitrum, Optimism, Base, zkSync Era, Polygon zkEVM",Protocol Logic,Router Exploit,Solidity
+Lava,1711670400,340000,Arbitrum,Protocol Logic,Calculation Error in Liquidation Engine ,Solidity
+PrismaLST,1711584000,11600000,Ethereum,Protocol Logic,Flashloan Trove Manipulation,Solidity
+Munchables,1711411200,62500000,Blast,Protocol Logic,Storage Slot Exploit,Solidity
+Curio,1711324800,16000000,Ethereum,Protocol Logic,Voting Power Inflation,Solidity
+Super Sushi Samurai,1711065600,4800000,Blast,Protocol Logic,Infinite Mint and Dump,Solidity
+Dolomite,1710892800,1800000,Ethereum,Protocol Logic,Acces Control Exploit,Solidity
+Unizen,1709856000,2100000,Ethereum,Protocol Logic,External Call Vulnerability,Solidity
+WOOFi Swap,1709596800,8500000,Arbitrum,Protocol Logic,Price Oracle Manipulation,Solidity
+Shido,1709164800,3300000,Ethereum,Protocol Logic,Private Key Compromised,Solidity
+Seneca,1709078400,6500000,"Ethereum, Arbitrum",Protocol Logic,Token approval exploit,Solidity
+BlueBerry,1708732800,1400000,Ethereum,Protocol Logic,Flashloan Price Oracle Attack,Solidity
+Tectonic,1708560000,250000,Cronos,Protocol Logic,Flashloan New Market Exploit,Solidity
+Abracadabra Spell,1706572800,6500000,Ethereum,Protocol Logic,Borrow Logic Exploit,Solidity
+Bungee,1705363200,3300000,Ethereum,Protocol Logic,Missing Input Validation,Solidity
+Wise Lending V1,1705017600,464000,Ethereum,Protocol Logic,Rounding Donation Attack,Solidity
+Gamma,1704326400,4500000,Arbitrum,Protocol Logic,Price Manipulation Attack,Solidity
+Radiant V2,1704153600,4500000,Arbitrum,Protocol Logic,Flashloan New Market Exploit,Solidity
+Orbit Bridge,1703980800,81700000,Ethereum,Protocol Logic,Signature Exploit,Solidity
+Levana Perps,1703635200,1100000,Osmosis,Protocol Logic,Price Oracle Attack,Rust
+KyberSwap Elastic,1700611200,48000000,"Ethereum, Base, Polygon, Optimism, Arbitrum",Protocol Logic,Flashloan Swap Logic Exploit,Solidity
+dYdX V3,1700265600,9000000,Ethereum,Protocol Logic,Price Manipulation Attack,
+Raft,1699574400,3300000,Ethereum,Protocol Logic,Infinite Mint and Dump,Solidity
+Unibot,1698710400,640000,Ethereum,Protocol Logic,Token approval exploit,Solidity
+Astrid Finance,1698537600,228000,Ethereum,Protocol Logic,Withdraw Function Argument Manipulation,
+Maestro,1698019200,465000,Ethereum,Protocol Logic,Arbitrary External Call,
+Platypus Finance,1697155200,2200000,Avalanche,Protocol Logic,Reentrancy,Solidity
+Arena SocialFi,1696636800,2900000,Avalanche,Protocol Logic,Reentrancy,Solidity
+Balancer V2,1695081600,238000,Ethereum,Protocol Logic,Frontend Attack,
+GMBL.COMPUTER,1693958400,815000,Arbitrum,Protocol Logic,Referral Claims Logic Exploit,
+SharedStake,1693526400,175000,Ethereum,Protocol Logic,Ownership Override Attack,
+Balancer V2,1693094400,800000,Ethereum,Protocol Logic,,Solidity
+Exactly,1692316800,7200000,Optimism,Protocol Logic,DebtManager Exploit,Solidity
+Earning.Farm,1691539200,540000,Ethereum,Protocol Logic,Reentrancy,Solidity
+Steadefi,1691452800,1157000,Ethereum,Protocol Logic,Deployer Wallet Compromised,
+LeetSwap,1690848000,620000,Base,Protocol Logic,Liquidity Pools Compromised,Solidity
+EraLend,1690243200,3400000,zkSync Era,Protocol Logic,Reentrancy,Solidity
+Palmswap,1690156800,900000,BSC,Protocol Logic,Inflationary Accounting Manipulation,Solidity
+Rodeo,1688428800,90000,Arbitrum,Protocol Logic,Mint Reserves Logic Exploit,Solidity
+AzukiDAO,1688342400,68000,Ethereum,Protocol Logic,Replay Attack,Solidity
+Ara Finance,1687132800,131000,BSC,Protocol Logic,Access Control Exploit,
+Midas Capital,1686960000,600000,BSC,Protocol Logic,Redeem Rounding Error Exploit,Solidity
+Tropykus RSK,1686700800,150000,Rootstock,Protocol Logic,Redeem Rounding Error Exploit,Solidity
+Hector Lending,1685664000,653000,Fantom,Protocol Logic,Unknown,
+Local Traders,1684886400,118000,BSC,Protocol Logic,Access Control Exploit,Solidity
+DEUS Finance,1683244800,6500000,"Arbitrum, BSC, Ethereum",Protocol Logic,Burn Function Mistake,Solidity
+Level Perps,1682899200,1000000,BSC,Protocol Logic,Referral Claims Logic Exploit,Solidity
+Hundred Finance,1681516800,7000000,Optimism,Protocol Logic,Flashloan Donate Function Logic Exploit,Solidity
+SushiSwap,1681084800,3300000,"Ethereum, Arbitrum, Optimism, BSC",Protocol Logic,Missing Input Validation,Solidity
+Safemoon,1679961600,8900000,BSC,Protocol Logic,Access Control Exploit,Solidity
+ParaSpace Lending V1,1679011200,5000000,Ethereum,Protocol Logic,Borrow Logic Exploit,Solidity
+Euler V1,1678665600,197000000,Ethereum,Protocol Logic,Flashloan Donate Function Logic Exploit,Solidity
+Hedera,1678406400,515000,Hedera,Protocol Logic,Unknown,
+LaunchZone,1677456000,700000,BSC,Protocol Logic,Access Control Exploit,Solidity
+Dexible V2,1676851200,2000000,"Ethereum, Arbitrum",Protocol Logic,Arbitrary External Call,Solidity
+dForce Lending,1675987200,3650000,"Arbitrum, Optimism",Protocol Logic,Reentrancy,Solidity
+Orion Pools,1675296000,3000000,BSC,Protocol Logic,Reentrancy,Solidity
+BonqDAO,1675209600,1700000,Polygon,Protocol Logic,Price Oracle Attack,Solidity
+Omm,1674259200,1891000,Icon,Protocol Logic,Redeem Function Exploit,Java
+LendHub,1673827200,6000000,Heco,Protocol Logic,Collateral Offboarding Mistake,Solidity
+Amun,1672012800,300000,Ethereum,Protocol Logic,Controlled Rebalance Manipulation,
+Rubic,1671926400,1410000,Ethereum,Protocol Logic,Router Exploit,Solidity
+Ankr,1669939200,5000000,BSC,Protocol Logic,Access Control Exploit,Solidity
+DFX V2,1668038400,4000000,Ethereum,Protocol Logic,Reentrancy,Solidity
+pNetwork,1667433600,4589449,BSC,Protocol Logic,Misconfiguration,Solidity
+Skyward Finance,1667347200,3000000,Near,Protocol Logic,Reentrancy,Rust
+Team Finance,1666828800,15800000,Ethereum,Protocol Logic,Migrate Function Mistake Exploit,Solidity
+Bond Protocol,1666310400,300000,Ethereum,Protocol Logic,Arbitrary External Call,Solidity
+TempleDAO,1665446400,2300000,Ethereum,Protocol Logic,Exploit Lack of Input Authentication,Solidity
+Binance Bridge,1665014400,570000000,BSC,Protocol Logic,Proof Verifier Bug,
+Sovryn,1664841600,1100000,RSK,Protocol Logic,Flashloan Reentrancy Attack,Solidity
+Transit Swap,1664668800,21000000,"Ethereum, BSC",Protocol Logic,Transfer Logic Exploit,Solidity
+Nomad,1659312000,190000000,Ethereum,Protocol Logic,Trusted Root Exploit,Solidity
+Audius,1658707200,6000000,Ethereum,Protocol Logic,Malicious Governance Proposal,Solidity
+Crema Finance,1656720000,8800000,Solana,Protocol Logic,Access Control Exploit,Rust
+Gym Network,1654646400,2100000,BSC,Protocol Logic,Deposit Function Exploit,Solidity
+Drift Trade,1652227200,14500000,Solana,Protocol Logic,realized PnL withdrawal bug,Rust
+Fortress Loans,1651968000,3000000,BSC,Protocol Logic,Governance and Oracle Exploit,Solidity
+Cashio,1647993600,48000000,Solana,Protocol Logic,Collateral Validation Exploit,Rust
+Fantasm Finance,1646784000,2260000,Fantom,Protocol Logic,Missing Condition Check,Solidity
+Treasure,1646265600,1400000,Arbitrum,Protocol Logic,Buy Function Exploit,Solidity
+Superfluid,1644278400,8700000,Polygon,Protocol Logic,CTX Exploit,Solidity
+Meter,1644105600,7700000,Ethereum,Protocol Logic,Deposit Function Exploit,Solidity
+Portal,1643760000,326000000,Solana,Protocol Logic,Signature Exploit,Rust
+Qubit,1643328000,80000000,BSC,Protocol Logic,Transfer Logic Exploit,Solidity
+Gamma,1640044800,8200000,Ethereum,Protocol Logic,Access Control Exploit,Solidity
+Bent Finance,1640044800,1750000,Ethereum,Protocol Logic,User Balances Manually Updated,Solidity
+MonoX,1638230400,31400000,"Ethereum, Polygon",Protocol Logic,Swap Function Exploit,Solidity
+ChainSwap,1636243200,4400000,"Ethereum, BSC",Protocol Logic,Exploit Weak Authentication Check,Solidity
+Vesper Finance,1635897600,3370000,Ethereum,Protocol Logic,Oracle Manipulation,Solidity
+pNetwork,1633305600,13000000,"BSC, Bitcoin",Protocol Logic,Log Spoofing,Rust
+Compound V2,1632873600,147000000,Ethereum,Protocol Logic,Math Mistake Exploit,Solidity
+NowSwap,1631664000,1000000,Ethereum,Protocol Logic,Inconsistent Value in Code,Solidity
+Zabu Finance,1631404800,3200000,Avalanche,Protocol Logic,Flashloan Exploit,Solidity
+DAO Maker Vesting,1630713600,4000000,Ethereum,Protocol Logic,Access Control Exploit,Solidity
+Acala Network,1628812800,1600000,Acala,Protocol Logic,Incentives Function Mistake,Solidity
+Poly Network,1628553600,611000000,"Ethereum, BSC, Polygon",Protocol Logic,Access Control Exploit,Solidity
+Thorchain DEX,1626912000,8000000,Ethereum,Protocol Logic,Refund Logic Exploit,Solidity
+Thorchain DEX,1626307200,5000000,Ethereum,Protocol Logic,Over-ride Logic Exploit,Solidity
+Multichain,1625875200,7900000,"Ethereum, BSC, Fantom",Protocol Logic,Private Key Compromised (Bad ECDSA Implementation),Solidity
+Merlin,1624924800,330000,BSC,Protocol Logic,Incentive Rewards Exploit,Solidity
+Safe Dollar,1624838400,248000,Polygon,Protocol Logic,Incentive Rewards Exploit,Solidity
+Alchemix V2,1623801600,6500000,Ethereum,Protocol Logic,Borrow Logic Exploit,Solidity
+Merlin,1621987200,550000,BSC,Protocol Logic,Math Mistake Exploit,Solidity
+Rari Capital,1620432000,10000000,Ethereum,Protocol Logic,Price Oracle Attack,Solidity
+ValueDefi,1620345600,11000000,BSC,Protocol Logic,Math Mistake Exploit,Solidity
+ValueDefi,1620172800,10000000,BSC,Protocol Logic,Access Control Exploit,Solidity
+Uranium Finance,1619568000,57200000,BSC,Protocol Logic,Math Mistake Exploit,Solidity
+DODO AMM,1615248000,2000000,Ethereum,Protocol Logic,Access Control Exploit,Solidity
+Cover Protocol,1609200000,9400000,Ethereum,Protocol Logic,Incentives Function Mistake,Solidity
+Pickle,1606003200,19700000,Ethereum,Protocol Logic,Vault Swap Exploit,Solidity
+dForce Lending,1587254400,25000000,Ethereum,Protocol Logic,Reentrancy,
+Ooki,1581984000,650000,Ethereum,Protocol Logic,Flashloan Price Oracle Attack,
+Ooki,1581724800,350000,Ethereum,Protocol Logic,Flashloan Slippage Attack,
+Parity Multisig,1510185600,150000000,Ethereum,Protocol Logic,Contract not initialized,Solidity
+CoinDash,1500336000,7700000,Ethereum,Protocol Logic,Frontend Attack,
+The DAO,1466121600,60000000,Ethereum,Protocol Logic,Reentrancy,Solidity
