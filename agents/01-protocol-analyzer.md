@@ -1,118 +1,173 @@
 # Protocol Analyzer Agent
 
-**Role**: Deep protocol understanding from documentation and code.
+**Role**: Build a repository-derived protocol truth sheet before bug hunting starts.
 
 **Input**:
 - List of `.sol` files
-- README.md (if exists)
-- docs/ directory (if exists)
+- `README.md` (if exists)
+- `docs/` directory (if exists)
+- Tests and NatSpec comments (if present)
 
-**Output**: Protocol context object (JSON format) containing invariants, value flows, integration claims, and protocol category.
+**Output**: Protocol context object (JSON format) containing category, invariants, value flows, integration claims, external dependencies, and a threat-model truth sheet.
+
+---
+
+## Core Principle
+
+Threat model calibration comes from repository evidence first.
+
+Use this source-quality order:
+1. Docs explicitly written for humans (`README.md`, `docs/`, specs, architecture notes)
+2. Tests that demonstrate expected behavior
+3. NatSpec and code comments
+4. Code structure itself
+
+If trust or lifecycle assumptions remain ambiguous, mark them `uncertain`. Do not silently invent a clean threat model.
 
 ---
 
 ## Execution Steps
 
-### Step 1: Locate Documentation
+### Step 1: Locate Repository Documentation
 
-**Priority Order**:
-1. `README.md` in project root
+Read, in order when available:
+1. `README.md`
 2. `docs/README.md`
-3. `docs/overview.md` or `docs/architecture.md`
-4. Whitepaper (if referenced)
-5. Docs/Technical docs if referenced.
-6. Code comments and NatSpec
+3. `docs/overview.md`, `docs/architecture.md`, `docs/spec*.md`
+4. Any whitepaper or design docs referenced by the repo
+5. Relevant tests that demonstrate lifecycle behavior, pause behavior, liquidation behavior, retry behavior, or settlement behavior
+6. NatSpec and contract-level comments
 
-**Action**:
-```
-Read README.md
-If not found: Ask user for protocol documentation
-If user provides none: Extract from code comments only
-```
+If docs are missing, continue with tests/comments/code evidence only, but lower certainty on trust assumptions.
 
-### Step 2: Extract Protocol Name & Category
+---
 
-**From Documentation, identify**:
-- Protocol name
-- Protocol type/category
+### Step 2: Extract Protocol Name And Category
 
-**Categories** (choose primary):
-- `lending` - Collateralized lending, money markets (Aave, Compound style)
-- `dex` - Decentralized exchange, AMM (Uniswap, Curve style)
-- `yield` - Yield aggregator, farming (Yearn style)
-- `staking` - Staking, validators
-- `bridge` - Cross-chain bridges
-- `nft` - NFT marketplace, collections
-- `governance` - DAO, voting systems
-- `options` - Options, derivatives
-- `insurance` - DeFi insurance
-- `other` - If none fit
+Identify:
+- protocol name
+- primary protocol category
+- any secondary category if the system is hybrid
 
-**Output Format**:
+Categories:
+- `lending`
+- `dex`
+- `yield`
+- `staking`
+- `bridge`
+- `nft`
+- `governance`
+- `options`
+- `insurance`
+- `other`
+
+**Output Example**:
 ```json
 {
   "protocol_name": "ExampleProtocol",
-  "category": "lending"
+  "category": "lending",
+  "secondary_categories": ["yield"]
 }
 ```
 
 ---
 
-### Step 3: Extract System Invariants
+### Step 3: Build The Protocol Truth Sheet
 
-**Definition**: An invariant is a property that MUST ALWAYS be true.
+Load `references/workflow/protocol-truths.md`.
 
-**Common Invariant Patterns by Category**:
+Extract repository-grounded truths for:
+- trusted actors
+- semi-trusted actors
+- untrusted actors
+- offchain dependencies
+- lifecycle states
+- shared liquidity domains
+- retry / asynchronous semantics
+- impossible states / forbidden assumptions
+- documented limitations
+- documented known issues or explicit non-goals
 
-**Lending/Vault Protocols**:
-- `totalDeposits == sum(userDeposits)`
-- `totalCollateralValue >= totalDebtValue`
-- `userCollateral[user] * collateralRatio >= userDebt[user]`
-- `availableLiquidity + totalBorrowed == totalDeposited`
+For each item, record:
+- `statement`
+- `source`
+- `certainty` (`high` / `medium` / `low` / `uncertain`)
 
-**DEX/AMM Protocols**:
-- `reserve0 * reserve1 >= K` (constant product)
-- `totalLPTokens * price == totalReserveValue`
-- `sum(userLPBalance) == totalLPSupply`
+Rules:
+- Prefer docs over intuition.
+- Tests may confirm or narrow a documented statement.
+- If docs and code appear to disagree, record the tension instead of resolving it silently.
+- Historical or social context outside the repo is out of scope here.
 
-**Staking Protocols**:
-- `totalStaked == sum(userStaked)`
-- `rewardsDistributed <= rewardsAccumulated`
-- `userStaked[user] + userRewards[user] <= totalStaked + totalRewards`
+**Output Example**:
+```json
+{
+  "protocol_truth_sheet": {
+    "trusted_actors": [
+      {"statement": "owner multisig can pause markets", "source": "README.md:48", "certainty": "high"}
+    ],
+    "semi_trusted_actors": [
+      {"statement": "keeper settles batches but should not be able to steal funds", "source": "docs/architecture.md:72", "certainty": "medium"}
+    ],
+    "untrusted_actors": [
+      {"statement": "users and liquidators are adversarial", "source": "tests/Liquidation.t.sol:19", "certainty": "medium"}
+    ],
+    "offchain_dependencies": [
+      {"statement": "oracle updater posts prices", "source": "README.md:65", "certainty": "high"}
+    ],
+    "lifecycle_states": [
+      {"statement": "active -> paused -> shutdown", "source": "docs/spec.md:30", "certainty": "high"}
+    ],
+    "shared_liquidity_domains": [
+      {"statement": "all vault withdrawals draw from one reserve pool", "source": "docs/architecture.md:91", "certainty": "high"}
+    ],
+    "retry_semantics": [
+      {"statement": "failed settlements are re-queued", "source": "tests/Settlement.t.sol:118", "certainty": "medium"}
+    ],
+    "impossible_states": [
+      {"statement": "underlying asset cannot be decommissioned", "source": "README.md:112", "certainty": "high"}
+    ],
+    "documented_limitations": [
+      {"statement": "only whitelisted assets are supported", "source": "README.md:141", "certainty": "high"}
+    ],
+    "known_issues": [
+      {"statement": "liquidations may be delayed during global pause", "source": "docs/known-issues.md:9", "certainty": "high"}
+    ]
+  }
+}
+```
 
-**ERC20/Token Protocols**:
-- `totalSupply == sum(balanceOf(user))`
-- `allowance[owner][spender] >= 0`
+Also derive a compact `trust_model` summary that downstream stages can consume directly.
 
-**Method**:
-1. Search documentation for phrases like:
-   - "invariant"
-   - "must always"
-   - "guaranteed"
-   - "cannot exceed"
-   - "should equal"
+---
 
-2. Examine code for `require()` statements that enforce rules
-3. Look for comments explaining mathematical relationships
-4. Identify state variables that move together
+### Step 4: Extract System Invariants
 
-**Extract 3-7 core invariants**
+An invariant is a property that should remain true across all healthy state transitions.
 
-**Output Format**:
+Look for:
+- explicit invariants in docs
+- equations implied by accounting variables
+- requirements that preserve solvency, fairness, or queue progress
+- lifecycle guarantees such as "paused means value movement stops" or "removed manager loses authority"
+
+Extract 3-10 core invariants.
+
+**Output Example**:
 ```json
 {
   "invariants": [
     {
-      "description": "Total supply equals sum of all balances",
+      "description": "Total supply equals the sum of all balances",
       "mathematical": "totalSupply == sum(balanceOf(user)) for all users",
       "importance": "critical",
       "source": "ERC20 standard"
     },
     {
-      "description": "Collateral value must exceed debt value",
-      "mathematical": "userCollateral * collateralPrice >= userDebt * debtPrice",
+      "description": "Healthy withdrawals must remain payable from realizable assets",
+      "mathematical": "trackedAssets <= realizableAssets",
       "importance": "critical",
-      "source": "README.md:45, enforced in liquidate()"
+      "source": "docs/architecture.md:54"
     }
   ]
 }
@@ -120,43 +175,30 @@ If user provides none: Extract from code comments only
 
 ---
 
-### Step 4: Map Value Flows
+### Step 5: Map Value Flows
 
-**Identify**:
-- Where does value ENTER the protocol?
-- Where does value EXIT the protocol?
-- Where is value STORED (custody)?
+Identify:
+- where value enters
+- where value exits
+- where value is stored or forwarded
+- which flows depend on external protocols or shared reserves
 
-**Entry Points** (functions that bring value in):
-- `deposit()`, `stake()`, `swap()`, `mint()`
-- Functions marked `payable`
-- Functions calling `transferFrom(user, address(this), ...)`
-
-**Exit Points** (functions that send value out):
-- `withdraw()`, `unstake()`, `claim()`
-- Functions calling `transfer(user, ...)` or `call{value: ...}`
-
-**Custody** (where value sits):
-- `address(this)` balance
-- Vault contracts
-- External protocol integrations (Aave deposits, Uniswap LPs, etc.)
-
-**Output Format**:
+**Output Example**:
 ```json
 {
   "value_flows": {
     "entry_points": [
-      {"function": "deposit(uint256 amount)", "asset": "USDC", "destination": "address(this)"},
-      {"function": "depositETH() payable", "asset": "ETH", "destination": "vault contract"}
+      {"function": "deposit(uint256 amount)", "asset": "USDC", "destination": "address(this)"}
     ],
     "exit_points": [
-      {"function": "withdraw(uint256 amount)", "asset": "USDC", "source": "address(this)"},
-      {"function": "claim()", "asset": "reward tokens", "source": "rewardVault"}
+      {"function": "withdraw(uint256 amount)", "asset": "USDC", "source": "address(this)"}
     ],
     "custody_locations": [
-      "address(this) - holds user USDC deposits",
-      "vault contract at 0x... - holds staked ETH",
-      "Aave lending pool - earns yield on idle funds"
+      "address(this) - primary reserve",
+      "strategy vault - deployed capital"
+    ],
+    "shared_liquidity_dependencies": [
+      "all users withdraw from the same reserve pool"
     ]
   }
 }
@@ -164,171 +206,79 @@ If user provides none: Extract from code comments only
 
 ---
 
-### Step 5: Extract Integration Claims
+### Step 6: Extract Integration Claims
 
-**Definition**: Statements the protocol makes about external integrations.
+Find claims such as:
+- supports all ERC20 tokens
+- supports permit
+- integrates with Chainlink / Uniswap / Aave
+- supports cross-chain settlement
+- works during pause / emergency / migration
 
-**Look For Phrases Like**:
-- "Supports all ERC20 tokens"
-- "Compatible with Chainlink oracles"
-- "Works with any Uniswap V2 pair"
-- "Integrates with Aave V3"
-- "Supports EIP-2612 permit"
+For each claim, record:
+- `claim_id`
+- exact `claim`
+- `source`
+- `implications`
+- `dependencies`
+- `risk_level`
 
-**Critical**: These claims often hide assumptions that break with reality.
-
-**For Each Claim, Extract**:
-1. The exact claim
-2. Source (which document, which line)
-3. Implications (what this claim assumes about code)
-4. Dependencies (which external contracts/standards)
-
-**Example**:
-```
-Claim: "Supports all ERC20 tokens"
-Source: README.md:45
-Implications:
-  - Must handle tokens without return values (USDT)
-  - Must handle fee-on-transfer tokens (STA)
-  - Must handle rebasing tokens (stETH)
-  - Must handle non-standard permit (DAI)
-  - Scan this https://github.com/d-xo/weird-erc20?tab=readme-ov-file#weird-erc20-tokens know issue with weird token and find any relavent breakpoint 
-
-Dependencies: Any ERC20 token address
-Risk Level: MEDIUM - many ERC20 variants exist
-```
-
-**Output Format**:
-```json
-{
-  "integration_claims": [
-    {
-      "claim_id": "IC-1",
-      "claim": "Supports all ERC20 tokens",
-      "source": "README.md:45",
-      "implications": [
-        "Must handle USDT (no return value)",
-        "Must handle fee-on-transfer tokens",
-        "Must handle rebasing tokens",
-        "Must handle non-standard permit (DAI)"
-      ],
-      "dependencies": ["ERC20 standard", "EIP-2612 (permit)"],
-      "risk_level": "medium"
-    },
-    {
-      "claim_id": "IC-2",
-      "claim": "Uses Chainlink oracles for price feeds",
-      "source": "docs/architecture.md:23",
-      "implications": [
-        "Must check price staleness",
-        "Must handle decimal differences (8 vs 18)",
-        "Must check sequencer uptime (if L2)"
-      ],
-      "dependencies": ["Chainlink AggregatorV3Interface"],
-      "risk_level": "critical"
-    }
-  ]
-}
-```
+Only extract claims grounded in repo materials.
 
 ---
 
-### Step 6: Identify External Dependencies
+### Step 7: Identify External Dependencies
 
-**From Code & Docs, Find**:
-- External protocols integrated (Uniswap, Aave, Chainlink, etc.)
-- Library versions (OpenZeppelin version matters!)
-- Solidity compiler version
-- Network targets (Ethereum, Arbitrum, Optimism, etc.)
+From docs and code, extract:
+- external protocols
+- key libraries and versions
+- compiler version
+- target networks / L2s
 
-**Why This Matters**:
-- OpenZeppelin 4.x vs 5.x have breaking changes
-- L2 networks require sequencer checks for oracles
-- Different Uniswap versions have different attack surfaces
-
-**Output Format**:
-```json
-{
-  "external_dependencies": {
-    "protocols": [
-      {"name": "Chainlink", "usage": "Price oracles", "version": "AggregatorV3"},
-      {"name": "Uniswap V3", "usage": "Token swaps", "version": "0.8.x"}
-    ],
-    "libraries": [
-      {"name": "OpenZeppelin", "version": "4.9.3"},
-      {"name": "Solmate", "version": "6.2.0"}
-    ],
-    "compiler": "0.8.19",
-    "networks": ["Ethereum Mainnet", "Arbitrum One"]
-  }
-}
-```
+This is not just inventory. Note security-relevant consequences such as:
+- oracle freshness expectations
+- sequencer uptime requirements
+- low-liquidity reliance
+- upgradeability footprint
 
 ---
 
-### Step 7: Identify Trust Assumptions
+## Final Output
 
-**Question**: What does this protocol TRUST to behave correctly?
+Return a single JSON object with:
+- `protocol_name`
+- `category`
+- `secondary_categories`
+- `protocol_truth_sheet`
+- `trust_model`
+- `invariants`
+- `value_flows`
+- `integration_claims`
+- `external_dependencies`
 
-**Common Trust Assumptions**:
-- **Admin/Owner**: Can upgrade contracts, pause, change parameters
-- **Oracles**: Provide accurate prices
-- **External Protocols**: Aave won't pause reserves, Uniswap pools have liquidity
-- **Users**: Will act rationally (or irrationally - adversarial assumption)
-- **Network**: Block times, gas prices, finality
-
-**Output Format**:
-```json
-{
-  "trust_assumptions": [
-    {
-      "entity": "Protocol Owner",
-      "trust_level": "high",
-      "powers": ["pause contracts", "upgrade implementation", "set fee rates"],
-      "mitigation": "Timelock (48 hours)",
-      "risk": "Owner key compromise = protocol control"
-    },
-    {
-      "entity": "Chainlink Oracles",
-      "trust_level": "high",
-      "powers": ["provide asset prices"],
-      "mitigation": "staleness checks, circuit breakers",
-      "risk": "Stale price = incorrect liquidations"
-    }
-  ]
-}
-```
-
----
-
-## Final Output (Complete JSON)
-
-Combine all sections into final output:
-
+Example shape:
 ```json
 {
   "protocol_name": "ExampleProtocol",
   "category": "lending",
-  "invariants": [
-    {"description": "...", "mathematical": "...", "importance": "...", "source": "..."}
-  ],
-  "value_flows": {
-    "entry_points": [...],
-    "exit_points": [...],
-    "custody_locations": [...]
+  "secondary_categories": [],
+  "protocol_truth_sheet": {"trusted_actors": [], "known_issues": []},
+  "trust_model": {
+    "trusted_actors": ["owner multisig"],
+    "semi_trusted_actors": ["keeper"],
+    "untrusted_actors": ["users"],
+    "offchain_dependencies": ["oracle updater"],
+    "lifecycle_states": ["active", "paused", "shutdown"],
+    "shared_liquidity_domains": ["vault reserves"],
+    "retry_semantics": ["failed claims are queued for retry"],
+    "impossible_states": ["underlying asset cannot be decommissioned"],
+    "documented_limitations": ["only whitelisted assets are supported"],
+    "known_issues": []
   },
-  "integration_claims": [
-    {"claim_id": "...", "claim": "...", "source": "...", "implications": [...], "dependencies": [...], "risk_level": "..."}
-  ],
-  "external_dependencies": {
-    "protocols": [...],
-    "libraries": [...],
-    "compiler": "...",
-    "networks": [...]
-  },
-  "trust_assumptions": [
-    {"entity": "...", "trust_level": "...", "powers": [...], "mitigation": "...", "risk": "..."}
-  ]
+  "invariants": [],
+  "value_flows": {},
+  "integration_claims": [],
+  "external_dependencies": {}
 }
 ```
 
@@ -336,30 +286,14 @@ Combine all sections into final output:
 
 ## Validation Checklist
 
-Before finishing, verify:
-- [ ] Extracted at least 3 invariants
-- [ ] Identified protocol category
-- [ ] Mapped value entry and exit points
-- [ ] Extracted ALL integration claims (critical for Stage 5)
-- [ ] Listed external dependencies with versions
-- [ ] Identified trust assumptions
-
-**If README.md missing**: Explicitly note this in output and extract what you can from code.
+- [ ] Repository docs were read before trust assumptions were inferred
+- [ ] Every trust-model claim has repository evidence or is marked `uncertain`
+- [ ] Documented limitations and known issues were extracted if present
+- [ ] Invariants capture solvency, accounting, fairness, or lifecycle guarantees
+- [ ] Value flows identify shared reserves and external dependencies
 
 ---
 
-## Special Notes
+## Final Rule
 
-**Integration Claims are CRITICAL**:
-- These will be used in Stage 5 to build the Claims-Assumptions-Reality (CAR) matrix
-- This is how we catch bugs like "DAI permit" issues
-- Be thorough - missing a claim means missing potential integration bugs
-
-**Invariants are CRITICAL**:
-- These will be used in Stage 7 to verify if bugs actually break system rules
-- Clear invariants = better false positive filtering
-- If unsure, err on side of including more invariants
-
----
-
-**Output this complete JSON object and pass to next stage (Entry Mapper).**
+Do not start bug hunting with a guessed threat model. Build the repo truth sheet first, and carry uncertainty forward explicitly.

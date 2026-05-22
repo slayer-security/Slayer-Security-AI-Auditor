@@ -2,7 +2,7 @@
 
 ## Report Path
 
-Save the report to `assets/findings/{project-name}-pashov-ai-audit-report-{timestamp}.md` where `{project-name}` is the repo root basename and `{timestamp}` is `YYYYMMDD-HHMMSS` at scan time.
+Save the report to `assets/findings/{project-name}-slayer-security-ai-audit-report-{timestamp}.md` where `{project-name}` is the repo root basename and `{timestamp}` is `YYYYMMDD-HHMMSS` at scan time.
 
 ## Output Format
 
@@ -45,6 +45,15 @@ Save the report to `assets/findings/{project-name}-pashov-ai-audit-report-{times
 **Source Layer**
 `core` / `custom` / `live-hack-db` / `niche-specific`
 
+**Invariant**
+<The conservation law, coupling, capacity constraint, or interface guarantee that breaks>
+
+**Proof**
+<Concrete before/after values or state relationship showing the invariant holding before and broken after>
+
+**Exploitability**
+<Allowed attacker capability, attacker win, and why normal recovery does not neutralize the issue>
+
 **Description**
 <The vulnerable code pattern and why it is exploitable, in 1 short sentence>
 
@@ -59,6 +68,15 @@ Save the report to `assets/findings/{project-name}-pashov-ai-audit-report-{times
 [82] **2. <Title>**
 
 `ContractName.functionName` · Confidence: 82
+
+**Invariant**
+<The conservation law, coupling, capacity constraint, or interface guarantee that breaks>
+
+**Proof**
+<Concrete before/after values or state relationship showing the invariant holding before and broken after>
+
+**Exploitability**
+<Allowed attacker capability, attacker win, and why normal recovery does not neutralize the issue>
 
 **Description**
 <The vulnerable code pattern and why it is exploitable, in 1 short sentence>
@@ -87,7 +105,7 @@ Findings List
 
 ---
 
-> ⚠️ This review was performed by an AI assistant. AI analysis can never verify the complete absence of vulnerabilities and no guarantee of security is given. Team security reviews, bug bounty programs, and on-chain monitoring are strongly recommended. For a consultation regarding your projects' security, visit [https://www.pashov.com](https://www.pashov.com)
+> ⚠️ This review was performed by an AI assistant. AI analysis can never verify the complete absence of vulnerabilities and no guarantee of security is given. Team security reviews, bug bounty programs, and on-chain monitoring are strongly recommended.
 
 ````
 

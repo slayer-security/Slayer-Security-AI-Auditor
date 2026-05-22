@@ -1,261 +1,223 @@
-# Pattern Matcher Agent
+# Surface Interrogator Agent
 
-**Role**: Scan code against core vectors, custom vectors, live-hack mechanics, and trigger-gated niche-specific vectors.
+**Role**: Use attack vectors as routing hints, then force human-style question loops on every active exploit surface.
 
 **Input**:
 - `.sol` files
-- Protocol context from Stage 2 (especially integration_claims)
-- Entry points from Stage 3
+- Protocol context from Stage 2 (especially integration claims, protocol truth sheet, trust model, documented limitations)
+- Entry points and `function_state_matrix` from Stage 3
+- `invariant_map` and `revocation_matrix` from Stage 3
 - `trigger_flags` from Stage 3
 
-**Output**: Pattern matches with confidence scores, Solodit references (JSON format)
+**Output**: Active surfaces + surface interrogations + killed ideas + candidate findings (JSON format)
 
 ---
 
-## Execution Steps
+## Core Principle
 
-### Step 1: Load All Attack Vectors
+Vectors are not findings.
 
-**Always read these vector sources**:
-```
-references/attack-vectors/attack-vectors.md
-references/attack-vectors/custom-attack-vectors.md
-references/attack-vectors/live-hack-db/live-hack-vectors.md
-references/attack-vectors/vector-schema.md
-```
+Vectors tell you **where to look**.
+Human audit questions tell you **what assumption to pressure-test**.
+Exploitability gates tell you **what deserves to survive**.
 
-**Conditionally read this niche-specific source**:
-```
-references/attack-vectors/niche-specific/specialized-vectors.md
-```
+No candidate finding should be emitted until:
+- the surface has been interrogated,
+- the reachable unwanted state is named,
+- the attacker capability fits the repo-derived threat model,
+- and weak hypotheses have been killed and logged.
 
-Only evaluate niche-specific entries whose `Trigger` field matches the active `trigger_flags` from Stage 3, or whose trigger is `ALWAYS`.
+---
 
-**Vector formats you may encounter**:
-```
-**N. Vector Title**
+## Step 1: Load Routing Inputs
 
-- **D:** (Description) - What the vulnerability is
-- **FP:** (False Positive check) - When this pattern is SAFE
-```
+Always load:
+- `references/attack-vectors/attack-vectors.md`
+- `references/attack-vectors/custom-attack-vectors.md`
+- `references/attack-vectors/live-hack-db/live-hack-vectors.md`
+- `references/attack-vectors/vector-schema.md`
+- `references/safe-patterns.md`
 
-Or:
-```
-### LV-001: Title
-**Trigger**: ORACLE | TOKEN_FLOW
-**Summary**: ...
-**Detection Clues**:
-- ...
-**False Positive Checks**:
-- ...
-```
+Conditionally load:
+- `references/attack-vectors/niche-specific/specialized-vectors.md`
 
-**Action**:
-- Build one internal pattern database from the always-on sources
-- Add only the niche-specific entries whose trigger expression evaluates true
-- Preserve source metadata so the report can say where a pattern came from
-- Evaluate `Trigger` using this grammar only:
-  - `ALWAYS`
-  - `FLAG_A`
-  - `FLAG_A | FLAG_B`
-  - `FLAG_A & FLAG_B`
-- Apply dedupe by `(mechanic, code location, exploit surface)`:
-  - keep the highest-precedence vector as primary
-  - merge supporting references and example exploits from lower-precedence duplicates
+Also load question packs when their surfaces activate:
+- `references/question-packs/batch-processing.md`
+- `references/question-packs/pause-blacklist-lifecycle.md`
+- `references/question-packs/external-liquidity-assumptions.md`
 
-**Layer precedence**:
+Load workflow controls:
+- `references/workflow/human-audit-loop.md`
+- `references/workflow/killed-ideas-ledger.md`
+- `references/workflow/exploitability-gates.md`
+
+Use vectors and flags as activation hints, not as automatic findings.
+
+---
+
+## Step 2: Build The Active Surface List
+
+Construct an `active_surfaces` list from:
+- Stage 3 `trigger_flags`
+- vector triggers
+- direct code primitives in the `function_state_matrix`
+- `revocation_matrix` entries
+- preliminary red flags from Stage 3
+
+Minimum surfaces to consider:
+- `ORACLE`
+- `TOKEN_FLOW`
+- `FLASH_LOAN`
+- `SHARE_ACCOUNTING`
+- `BATCH_PROCESSING`
+- `PAUSE_BLACKLIST`
+- `EXTERNAL_LIQUIDITY`
+- `EMERGENCY_MODE`
+- `PRIVILEGED_ROLE`
+- `FAILURE_HANDLING`
+
+Examples:
+- loop over user-supplied recipients -> `BATCH_PROCESSING`
+- `whenNotPaused`, `blacklist`, `frozen`, `paused()` checks -> `PAUSE_BLACKLIST`
+- `getReserves`, `quote`, `swap`, redemption liquidity checks -> `EXTERNAL_LIQUIDITY`
+- retries, queues, `try/catch`, or best-effort loops -> `FAILURE_HANDLING`
+
+---
+
+## Step 3: Interrogate Every Active Surface Like A Human Auditor
+
+Load `references/workflow/human-audit-loop.md` and apply its question families to every active surface.
+
+At minimum, answer these cross-cutting questions:
+1. What assumption is this path making?
+2. What if one actor, asset, recipient, adapter, or market behaves badly?
+3. What if pause, blacklist, shutdown, or another lifecycle restriction activates mid-path?
+4. What if the external protocol, oracle, or liquidity source stops behaving like the code assumes?
+5. Does failure happen before or after state/accounting updates?
+6. Can one failure poison a shared loop, queue, or settlement path for everyone else?
+7. What recovery path exists, and does it actually neutralize the bad state?
+8. What does the attacker gain: value, persistent privilege, or durable progress failure?
+
+If a surface has a dedicated question pack, run it completely.
+
+### 3a. Batch Processing
+Load `references/question-packs/batch-processing.md`.
+
+### 3b. Pause / Blacklist / Lifecycle Restrictions
+Load `references/question-packs/pause-blacklist-lifecycle.md`.
+
+### 3c. External Liquidity Assumptions
+Load `references/question-packs/external-liquidity-assumptions.md`.
+
+### 3d. Niche Surface Vectors
+For `ORACLE`, `FLASH_LOAN`, `TOKEN_FLOW`, `SHARE_ACCOUNTING`, `SIGNATURE_AUTH`, `FAILURE_HANDLING`, etc.:
+- use vector layers to identify likely mechanics
+- apply the same question discipline before forming any hypothesis
+
+Every interrogation record must contain:
+- `surface`
+- `question_pack` or `vector_source`
+- `assumption`
+- `reachable_unwanted_state`
+- `failure_mode`
+- `evidence`
+- `impact_preview`
+- `mitigation_status`
+- `recovery_assessment`
+- `threat_model_fit`
+
+---
+
+## Step 4: Kill Weak Hypotheses Early
+
+Before creating a candidate finding, run the exploitability/noise gates from `references/workflow/exploitability-gates.md`.
+
+If a hypothesis fails because it is:
+- blocked by trust model
+- blocked by hidden invariant
+- blocked by real mitigation
+- missing a reachable unwanted state
+- grief-only with trivial recovery
+- duplicated from an already killed root cause
+
+then log it immediately to the killed-ideas ledger and stop promoting it.
+
+Every killed or narrowed hypothesis must record:
+- `hypothesis_id`
+- `raw_hypothesis`
+- `why_plausible`
+- `kill_reason`
+- `kill_evidence`
+- `narrower_variant_remaining`
+- `reentry_condition`
+- `status`
+
+---
+
+## Step 5: Only Then Form Candidate Findings
+
+Create a candidate finding only if all of these are true:
+- the assumption is concrete
+- the reachable unwanted state is explicit
+- the failure mode is reachable by an allowed attacker capability
+- no real mitigation or normal recovery path defangs it
+- the impact is specific enough for Stage 5 to break an invariant around it
+
+Candidate findings should be concise and attack-oriented, not generic pattern notes.
+
+Examples:
+- not: "loop over recipients present"
+- yes: "single blacklisted recipient can revert full batch reward distribution, creating a protocol-wide poison-pill DoS"
+
+Each candidate must include:
+- `broken_assumption`
+- `reachable_unwanted_state`
+- `attacker_capability`
+- `failure_mode`
+- `recovery_assessment`
+- `why_not_noise`
+
+---
+
+## Step 6: Dedupe Across Vectors, Question Packs, And Rejected Root Causes
+
+Apply dedupe by:
+- `mechanic`
+- `code location`
+- `exploit surface`
+- `reachable_unwanted_state`
+
+Layer precedence for duplicates:
 1. `custom-attack-vectors.md`
 2. `niche-specific/specialized-vectors.md`
 3. `live-hack-db/live-hack-vectors.md`
 4. `attack-vectors.md`
 
----
+If the same issue is surfaced by both a vector and a question pack:
+- keep one primary candidate
+- preserve all `supporting_source_layers`
+- preserve the `question_pack` that forced the assumption check
 
-### Step 2: Optional Supporting References
-
-If an active vector points at deeper background material, read supporting references as needed:
-- `references/integrations/erc20-variants.md`
-- `references/integrations/chainlink-oracles.md`
-
-These files are supporting research references, not standalone scan layers.
-
-**Total Patterns**: Variable.
-Base coverage comes from core + custom + live-hack-db vectors, then grows when niche-specific triggers activate.
+If the same root cause already exists in the killed-ideas ledger:
+- reject the rewording unless new evidence changes the kill reason
 
 ---
 
-### Step 3: Load Safe Patterns (FP Prevention)
+## Step 7: Confidence Scoring
 
-**Read**:
-```
-references/safe-patterns.md
-```
+Use `references/judging.md`, but do not assign high confidence just because a pattern resembles history.
 
-**Purpose**: Know when vulnerable patterns are actually SAFE due to mitigations
+Confidence should rise when:
+- the question loop produced a specific reachable unwanted state
+- the attacker capability fits the documented threat model
+- the code evidence is local and precise
+- Stage 3 invariants or revocation events suggest a real break
 
-**Examples**:
-- Reentrancy pattern + `nonReentrant` modifier = SAFE
-- Raw transfer + `using SafeERC20` = SAFE
-- External call + CEI pattern = SAFE
-
----
-
-### Step 4: Scan Code for Each Pattern
-
-**For EACH active pattern**:
-
-1. **Check if pattern exists in code**:
-   - Use `Grep` to search for pattern indicators
-   - Read relevant code sections
-   - Confirm pattern actually matches
-
-2. **Check if safe pattern mitigation exists**:
-   - Consult `safe-patterns.md`
-   - Look for mitigations (modifiers, wrappers, checks)
-   - If mitigation found → Skip (not a finding)
-
-3. **If match AND no mitigation**:
-   - Record finding
-   - Extract code snippet
-   - Note file and line number
-   - Assign preliminary confidence score
-   - Record `source_layer` (`core`, `custom`, `live-hack-db`, `niche-specific`)
-
-**Example Scan Process**:
-
-```
-Pattern: "Reentrancy via external call before state update"
-
-Step 1: Search code
-Grep pattern: "\.call\{|\.transfer\(|\.send\("
-Found in: Vault.sol:142
-
-Step 2: Read code context
-function withdraw(uint256 amount) external {
-    payable(msg.sender).transfer(amount);  // External call
-    balances[msg.sender] -= amount;  // State update AFTER
-}
-
-Step 3: Check safe patterns
-- Has `nonReentrant` modifier? NO
-- Follows CEI pattern? NO (call before state update)
-- Using ReentrancyGuard? NO
-
-Step 4: MATCH! Record finding
-```
-
----
-
-### Step 5: Assign Confidence Scores (Using judging.md)
-
-**Load**: `references/judging.md` (confidence methodology)
-
-**Base Confidence**: Start at 100
-
-**Deductions** (from judging.md):
-- **-25**: Requires privileged caller (onlyOwner, etc.)
-- **-20**: Partial attack path (missing some steps)
-- **-15**: Self-contained impact (doesn't affect other users)
-- **-10**: Requires specific timing
-- **-10**: Requires unusual state
-
-**Additions**:
-- **+10**: Real-world exploit exists (Solodit reference)
-- **+5**: Breaks critical invariant (from Stage 2)
-
-**Final Score**: 0-100
-
-**Reporting Threshold**: Only report findings with confidence >= 75 (configurable)
-
-**Example**:
-```
-Finding: Reentrancy in withdraw()
-Base: 100
-- Privileged caller?: No (public function) → No deduction
-- Partial path?: No (full attack path clear) → No deduction
-- Affects others?: Yes (can drain contract) → No deduction
-Final: 100 → Report as CRITICAL
-```
-
----
-
-### Step 6: Query Solodit (If MCP Available)
-
-**For each pattern match**:
-
-**Query Structure**:
-```json
-{
-  "keywords": ["<pattern_name>", "<protocol_category>"],
-  "tags": ["<relevant_tags>"],
-  "severity": ["Critical", "High"],
-  "minQualityScore": 6
-}
-```
-
-**Example Queries**:
-
-**ERC20 Integration Bug**:
-```json
-{
-  "keywords": ["USDT", "transfer", "return value"],
-  "tags": ["erc20", "token", "integration"],
-  "severity": ["High", "Medium"],
-  "minQualityScore": 6
-}
-```
-
-**Chainlink Staleness**:
-```json
-{
-  "keywords": ["chainlink", "stale price", "updatedAt"],
-  "tags": ["oracle", "chainlink"],
-  "severity": ["Critical", "High"],
-  "minQualityScore": 7
-}
-```
-
-**Reentrancy**:
-```json
-{
-  "keywords": ["reentrancy", "external call"],
-  "tags": ["reentrancy", "external-call"],
-  "severity": ["Critical", "High"],
-  "minQualityScore": 7
-}
-```
-
-**If MCP unavailable**: Skip Solodit queries, note in output
-
-**Add Solodit references to finding**:
-```json
-{
-  "solodit_references": [
-    {
-      "title": "Similar reentrancy in Protocol X",
-      "url": "https://solodit.xyz/issues/...",
-      "similarity": 0.85,
-      "impact": "$500k loss"
-    }
-  ]
-}
-```
-
----
-
-### Step 7: Categorize Findings
-
-**Categories** (for organization):
-- `access-control` - Missing or broken access control
-- `reentrancy` - Reentrancy vulnerabilities
-- `oracle` - Oracle-related issues
-- `token-integration` - ERC20/token integration bugs
-- `arithmetic` - Overflow, underflow, precision loss
-- `logic` - Business logic flaws
-- `state-management` - State inconsistency
-- `external-call` - Unsafe external calls
-- `timestamp` - Timestamp manipulation
-- `signature` - Signature verification issues
+Confidence should fall when:
+- the failure mode is speculative
+- the exploit depends on uncertain external behavior
+- a real recovery path probably neutralizes the issue
+- the idea is only a local oddity, not a state-level consequence
 
 ---
 
@@ -263,105 +225,61 @@ Final: 100 → Report as CRITICAL
 
 ```json
 {
-  "pattern_matches": [
+  "killed_ideas": [
     {
-      "id": "PM-001",
-      "pattern_id": 67,
-      "pattern_name": "Fee-on-Transfer Token Mishandling",
-      "category": "token-integration",
-      "severity": "high",
-      "confidence": 95,
-      "file": "Vault.sol",
-      "line": 142,
-      "function": "deposit(address token, uint256 amount)",
-      "code_snippet": "token.transferFrom(msg.sender, address(this), amount);\nuserBalance[msg.sender] += amount;  // Assumes amount == received",
-      "description": "Contract tracks balance using `amount` parameter instead of actual received amount. Fee-on-transfer tokens will cause accounting mismatch.",
-      "safe_pattern_check": {
-        "checked": true,
-        "mitigation_found": false,
-        "details": "No balanceOf() check before/after transfer"
-      },
-      "solodit_references": [
-        {
-          "title": "Balancer $500k Fee-on-Transfer Exploit",
-          "url": "https://solodit.xyz/issues/balancer-sta-fee-on-transfer",
-          "impact": "$500k",
-          "similarity": 0.95
-        }
-      ],
-      "attack_path_preview": "1. Attacker deposits fee-on-transfer token → 2. Contract credits full amount → 3. Actual received is less → 4. Attacker can withdraw more than deposited",
-      "solodit_query_used": {
-        "keywords": ["fee on transfer", "deflationary token"],
-        "tags": ["erc20", "accounting"]
-      }
-    },
-    {
-      "id": "PM-002",
-      "pattern_id": 145,
-      "pattern_name": "DAI Permit Non-Standard Signature",
-      "category": "token-integration",
-      "severity": "high",
-      "confidence": 95,
-      "file": "Vault.sol",
-      "line": 89,
-      "function": "depositWithPermit(...)",
-      "code_snippet": "IERC20Permit(token).permit(owner, spender, value, deadline, v, r, s);",
-      "description": "Uses standard EIP-2612 permit signature, incompatible with DAI's non-standard permit implementation.",
-      "safe_pattern_check": {
-        "checked": true,
-        "mitigation_found": false,
-        "details": "No token-specific permit adapters"
-      },
-      "solodit_references": [
-        {
-          "title": "DAI Permit Mismatch in Protocol Y",
-          "url": "https://solodit.xyz/issues/...",
-          "similarity": 0.90
-        }
-      ],
-      "integration_claim_violated": "IC-1: Supports all ERC20 tokens",
-      "solodit_query_used": {
-        "keywords": ["DAI permit signature"],
-        "tags": ["erc20", "permit", "integration"]
-      }
+      "hypothesis_id": "KI-001",
+      "raw_hypothesis": "Low-liquidity quote causes mispricing everywhere",
+      "why_plausible": "Protocol reads AMM quote directly",
+      "kill_reason": "No attacker-reachable path converts the quote into realizable value or solvency break",
+      "kill_evidence": ["quotes only used for UI preview"],
+      "narrower_variant_remaining": "none",
+      "reentry_condition": "new evidence that quote output affects accounting or settlement",
+      "status": "killed"
     }
   ],
-  "statistics": {
-    "total_patterns_scanned": 176,
-    "matches_found": 12,
-    "safe_patterns_excluded": 8,
-    "final_findings": 4,
-    "solodit_queries_made": 4,
-    "solodit_mcp_available": true
-  },
-  "scanned_files": 23,
-  "scanned_lines": 4521
-}
-```
-
----
-
-## Special Pattern Matching: Integration Claims
-
-**From Stage 2**, you have integration_claims like:
-```
-"Supports all ERC20 tokens"
-```
-
-**For each claim, cross-check**:
-1. Does code use SafeERC20? (handles USDT)
-2. Does code check balance diff? (handles fee-on-transfer)
-3. Does code support DAI permit? (non-standard)
-4. Does code handle rebasing? (shares vs balances)
-
-**If claim exists but code doesn't handle variants → Flag as integration bug**
-
-**Link finding to claim**:
-```json
-{
-  "integration_claim_violated": "IC-1: Supports all ERC20 tokens",
-  "claim_source": "README.md:45",
-  "reality_gap": "Code assumes standard transfer() return value, breaks for USDT"
+  "surface_interrogations": [
+    {
+      "id": "SI-001",
+      "surface": "BATCH_PROCESSING",
+      "question_pack": "batch-processing",
+      "assumption": "Every recipient in the batch can be processed successfully in a single loop",
+      "reachable_unwanted_state": "A single blacklisted recipient prevents all unrelated recipients from receiving already-earned rewards",
+      "failure_mode": "A blacklisted recipient causes token transfer to revert, rolling back the entire distribution",
+      "evidence": [
+        "Distributor.sol:118 loops over recipients",
+        "ERC20 transfer is inside loop",
+        "No try/catch or per-item skip path"
+      ],
+      "impact_preview": "One poisoned recipient can block distribution for all users",
+      "mitigation_status": "none",
+      "recovery_assessment": "no alternate partial-settlement path present",
+      "threat_model_fit": "works with an untrusted recipient; does not require trusted actor malice"
+    }
+  ],
+  "candidate_findings": [
+    {
+      "id": "CF-001",
+      "title": "Blacklisted recipient can poison full batch distribution",
+      "surface": "BATCH_PROCESSING",
+      "question_pack": "batch-processing",
+      "file": "Distributor.sol",
+      "line": 118,
+      "confidence": 88,
+      "primary_source_layer": "custom",
+      "supporting_source_layers": ["live-hack-db"],
+      "broken_assumption": "Batch execution assumes all recipients are transferable at settlement time",
+      "reachable_unwanted_state": "valid rewards cannot be settled for healthy users because one poisoned recipient reverts the shared loop",
+      "attacker_capability": "an untrusted recipient or asset that can trigger a revert during transfer",
+      "failure_mode": "Single recipient revert rolls back the full batch",
+      "recovery_assessment": "no skip/continue path; operator must remove the poison item out-of-band",
+      "why_not_noise": "the failure is durable, blocks honest-user progress, and does not require trusted actor malice"
+    }
+  ],
+  "active_surfaces": [
+    "TOKEN_FLOW",
+    "BATCH_PROCESSING",
+    "PAUSE_BLACKLIST"
+  ]
 }
 ```
 
@@ -369,42 +287,15 @@ Final: 100 → Report as CRITICAL
 
 ## Validation Checklist
 
-Before finishing:
-- [ ] All 170+ patterns scanned
-- [ ] Integration-specific patterns scanned (based on claims from Stage 2)
-- [ ] Safe patterns checked for each match
-- [ ] Confidence scores assigned using judging.md
-- [ ] Solodit queries made for each finding (if MCP available)
-- [ ] Findings categorized and prioritized
+- [ ] Active surfaces derived from both flags and code primitives
+- [ ] Every active surface interrogated with human-audit questions
+- [ ] No candidate finding emitted before exploitability/noise gates were checked
+- [ ] Killed ideas logged as soon as a hypothesis dies or narrows
+- [ ] Dedupe applied across vector layers, question packs, and killed root causes
+- [ ] Output preserves source provenance and question-pack provenance
 
 ---
 
-## Performance Notes
+## Final Rule
 
-**Optimization**:
-- Use `Grep` for initial pattern detection (fast)
-- Only `Read` full files when pattern match suspected
-- Batch Solodit queries (don't query for every pattern, only matches)
-
-**Expected Output**:
-- 170+ patterns scanned
-- 5-15 preliminary matches
-- 2-8 final findings (after safe pattern filtering)
-
----
-
-## Critical Notes
-
-**Integration Claims are Key**:
-- If Stage 2 found claim "Supports all ERC20"
-- And you find raw transfer() without SafeERC20
-- This is a HIGH confidence finding (breaks explicit claim)
-
-**Safe Patterns Save Time**:
-- Without safe-patterns.md: 50+ false positives
-- With safe-patterns.md: 5-10 real findings
-- Always check safe patterns before flagging
-
----
-
-**Output this complete JSON object and pass to Stage 5 (Deep Thinker).**
+Patterns trigger investigation. They do not substitute for it.

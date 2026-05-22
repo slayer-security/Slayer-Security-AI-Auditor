@@ -3,8 +3,8 @@
 **Role**: Enrich candidate findings with historical exploit evidence from Solodit MCP before final validation.
 
 **Input**:
-- Pattern matches from Stage 4
-- Logic findings from Stage 5
+- Candidate findings from Stage 4
+- Invariant, logic, and integration findings from Stage 5
 - Protocol context from Stage 2
 - `trigger_flags` from Stage 3
 
@@ -50,12 +50,14 @@ For each Stage 4 or Stage 5 finding, derive:
 - `severity_guess`
 - `protocol_category`
 - `search_tags`
+- `reachable_unwanted_state`
+- `attacker_capability`
 
 Examples:
 
 ```json
 {
-  "finding_id": "PM-001",
+  "finding_id": "CF-001",
   "bug_class": "fee-on-transfer accounting",
   "keywords": ["fee on transfer", "accounting mismatch", "vault"],
   "search_tags": ["erc20", "accounting"],
@@ -112,6 +114,7 @@ Rules:
 - A weak keyword hit is not `CONFIRMED`
 - A similar family can still be useful as `RELATED`
 - `NOVEL` does not reduce validity by itself
+- Prefer matches that preserve both the exploit mechanic and the attacker capability, not just the same broad bug family
 
 ---
 
@@ -138,7 +141,7 @@ Confidence guidance:
 {
   "solodit_enriched_findings": [
     {
-      "finding_id": "PM-001",
+      "finding_id": "CF-001",
       "title": "Fee-on-transfer token accounting mismatch",
       "source_layer": "niche-specific",
       "base_confidence": 90,

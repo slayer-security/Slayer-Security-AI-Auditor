@@ -1,12 +1,12 @@
 # Entry Point Mapper Agent
 
-**Role**: Deep codebase exploration from entry points, building state dependency graph.
+**Role**: Map entry points, state transitions, invariant writers, and revocation surfaces that drive downstream interrogation.
 
 **Input**:
 - `.sol` files
-- Protocol context from Stage 2 (especially invariants)
+- Protocol context from Stage 2 (especially documented invariants, protocol truth sheet, integration claims, and value flows)
 
-**Output**: Entry point map + Function-State Matrix + Coupled State Pairs + trigger_flags (JSON format)
+**Output**: Entry point map + function-state matrix + invariant map + revocation matrix + trigger flags (JSON format)
 
 ---
 
@@ -14,318 +14,146 @@
 
 ### Step 1: Identify All Entry Points
 
-**Entry Point Definition**: Functions that external actors can call.
+**Entry Point Definition**: Any externally reachable function or callback that can change protocol behavior.
 
-**Criteria**:
-- `external` visibility
-- `public` visibility
-- Includes inherited functions
-- Includes callback functions (ERC721 hooks, flash loan receivers, etc.)
+Include:
+- `external` and `public` functions
+- inherited public/external functions actually reachable in scope
+- callback hooks (`onERC721Received`, `onERC1155Received`, flash-loan receivers, bridge receivers)
+- emergency/admin functions that can change protocol state
+- batch/multicall entry points and settlement functions
 
-**Method**:
-Use `Grep` to find:
-```
-Pattern: "function .* (external|public)"
-```
-
-**For Each Entry Point, Extract**:
-- Function signature
-- Contract name
-- Visibility
-- Modifiers
-- Parameters
-- Return types
-
-**Output Format**:
-```json
-{
-  "entry_points": [
-    {
-      "id": "EP-1",
-      "function_signature": "deposit(address token, uint256 amount)",
-      "contract": "Vault.sol",
-      "visibility": "external",
-      "modifiers": ["nonReentrant"],
-      "payable": false,
-      "parameters": [
-        {"name": "token", "type": "address"},
-        {"name": "amount", "type": "uint256"}
-      ]
-    }
-  ]
-}
-```
+For each entry point, extract:
+- signature
+- contract
+- modifiers
+- parameters
+- payable status
+- whether it is user-facing, privileged, callback-based, batch-oriented, lifecycle-changing, or emergency-only
 
 ---
 
-### Step 2: Build Function-State Matrix
+### Step 2: Build Function-State-External Matrix
 
-**For Each Entry Point**:
-1. Read the full function body
-2. Trace ALL state variable reads
-3. Trace ALL state variable writes
-4. Identify external calls
-5. Identify internal function calls (follow recursively)
+For each entry point:
+1. Trace all state reads.
+2. Trace all state writes.
+3. Trace all external calls and callback opportunities.
+4. Follow internal calls recursively until the real state mutation sites are known.
+5. Note whether state updates happen before or after external interactions.
 
-**State Variable Identification**:
-```solidity
-// READS
-uint256 balance = userBalance[msg.sender];  // READ: userBalance
-if (totalSupply > 0) { ... }                // READ: totalSupply
+Record special behaviors:
+- loops over user input
+- loops over stored arrays/sets
+- pause / blacklist / auth checks
+- asset movement (`transfer`, `transferFrom`, `_mint`, `_burn`, `balanceOf(address(this))`)
+- price/quote reads
+- low-liquidity / spot-state dependencies
+- emergency mode entry/exit
+- retry or queue progression
 
-// WRITES
-userBalance[msg.sender] += amount;          // WRITE: userBalance
-totalSupply = newSupply;                    // WRITE: totalSupply
-```
-
-**External Call Identification**:
-```solidity
-token.transferFrom(...);        // External call to token contract
-oracle.latestRoundData();       // External call to oracle
-address.call{value: ...}("");   // Low-level external call
-```
-
-**Method**:
-- Read function code line by line
-- Track state variable usage
-- Follow internal function calls
-- Note all external interactions
-
-**Output Format**:
-```json
-{
-  "function_state_matrix": [
-    {
-      "function_id": "EP-1",
-      "function": "deposit(address token, uint256 amount)",
-      "state_reads": [
-        {"variable": "userBalance[msg.sender]", "type": "mapping(address => uint256)"},
-        {"variable": "totalSupply", "type": "uint256"}
-      ],
-      "state_writes": [
-        {"variable": "userBalance[msg.sender]", "type": "mapping(address => uint256)", "operation": "+="},
-        {"variable": "totalSupply", "type": "uint256", "operation": "+="},
-        {"variable": "lastDeposit[msg.sender]", "type": "mapping(address => uint256)", "operation": "="}
-      ],
-      "external_calls": [
-        {"target": "token", "function": "transferFrom(address,address,uint256)", "before_state_update": false}
-      ],
-      "internal_calls": [
-        {"function": "_updateRewards(address)", "state_impact": "writes rewardDebt"}
-      ]
-    }
-  ]
-}
-```
+**Purpose**: this matrix is the raw material for both invariant mapping and human-style question routing.
 
 ---
 
-### Step 3: Identify Coupled State Pairs
+### Step 3: Map Every Invariant
 
-**Definition**: State variables that MUST be updated together to maintain invariants.
+Use the attacker mindset: invariants are the relationships that must hold if the protocol is healthy.
 
-**Common Patterns**:
+Build an `invariant_map` with these required sections.
 
-**Pattern 1: Sum Relationship**
-```solidity
-mapping(address => uint256) public userBalance;
-uint256 public totalSupply;
-// Coupled: totalSupply == sum(userBalance)
-```
+#### 3a. Conservation Laws
 
-**Pattern 2: Accounting Sync**
-```solidity
-mapping(address => uint256) public userStaked;
-mapping(address => uint256) public rewardDebt;
-// Coupled: When userStaked changes, rewardDebt must update
-```
+Examples:
+- `sum(user balances) == totalSupply`
+- `deposited - withdrawn == tracked assets`
+- `available liquidity + borrowed == total assets`
 
-**Pattern 3: Price-Value Dependency**
-```solidity
-uint256 public collateralAmount;
-uint256 public collateralValue;  // = collateralAmount * price
-// Coupled: When collateralAmount changes, collateralValue must recalculate
-```
+For each conservation law, record:
+- invariant statement
+- variables involved
+- every function that modifies any term
+- whether the invariant is enforced explicitly or only assumed
 
-**Pattern 4: Multi-Token Reserves (AMM)**
-```solidity
-uint256 public reserve0;
-uint256 public reserve1;
-uint256 public kLast;  // = reserve0 * reserve1
-// Coupled: When reserves change, kLast must update
-```
+#### 3b. State Couplings
 
-**Method**:
-1. Review invariants from Stage 2
-2. Find state variables mentioned in same invariant
-3. Check if they appear together in function writes
-4. Look for mathematical relationships in code
+Examples:
+- when `userStaked` changes, `rewardDebt` must change
+- when reserves change, cached price / `kLast` / share price must update
 
-**Output Format**:
-```json
-{
-  "coupled_state_pairs": [
-    {
-      "pair_id": "CSP-1",
-      "variables": ["userBalance", "totalSupply"],
-      "relationship": "sum",
-      "invariant": "totalSupply == sum(userBalance[user]) for all users",
-      "importance": "critical",
-      "source": "Stage 2 invariant #1"
-    },
-    {
-      "pair_id": "CSP-2",
-      "variables": ["userStaked[user]", "rewardDebt[user]"],
-      "relationship": "synchronized",
-      "invariant": "rewardDebt tracks cumulative rewards at time of stake change",
-      "importance": "critical",
-      "functions_that_update": ["stake()", "unstake()", "claim()"]
-    },
-    {
-      "pair_id": "CSP-3",
-      "variables": ["reserve0", "reserve1", "kLast"],
-      "relationship": "product",
-      "invariant": "kLast == reserve0 * reserve1 (constant product)",
-      "importance": "critical",
-      "source": "AMM invariant"
-    }
-  ]
-}
-```
+For each coupling, record:
+- the coupled variables
+- the relationship
+- all writers of each side
+- candidate writers that might forget the companion update
+
+#### 3c. Capacity Constraints
+
+Examples:
+- `require(value <= limit)`
+- LTV caps
+- supply caps
+- reward caps
+- queue length / batch size caps
+
+For each constraint, record:
+- constrained value
+- limit variable or constant
+- all code paths that increase the constrained value
+- which paths enforce the cap and which do not
+
+#### 3d. Interface Guarantees
+
+Examples:
+- `previewWithdraw()` must match actual withdraw accounting
+- `balanceOf()` / `totalAssets()` / `convertToShares()` must stay coherent
+- view functions must not promise values state-changing flows fail to honor
+
+For each guarantee, record:
+- promise or equivalence
+- where the promise is exposed
+- which state-changing paths must preserve it
+
+#### 3e. Breakability Hints
+
+For each invariant family, note likely break styles:
+- round-trip mismatch (`deposit -> withdraw` returns more or less than expected)
+- path divergence (two routes to the same outcome produce different state)
+- ordering sensitivity (`A -> B` vs `B -> A`)
+- zero / first / last / max-capacity degeneration
+- emergency transition inconsistency
 
 ---
 
-### Step 4: Map Modifiers and Access Control
+### Step 4: Build The Revocation Matrix
 
-**For Each Entry Point**:
-- List modifiers applied
-- Determine access restrictions
+Map every event where authority, liquidity, or progress should disappear or change meaning.
 
-**Common Modifiers**:
-- `onlyOwner` - Owner-only
-- `nonReentrant` - Reentrancy protection
-- `whenNotPaused` - Pausable
-- `requiresAuth` - Custom auth
-- Custom modifiers
+Examples:
+- role removal
+- pause / unpause
+- shutdown / rescue / migration
+- blacklist / freeze
+- decommission / delist / disable market
+- queue cancel / retry reset / settlement abort
 
-**Output Format**:
-```json
-{
-  "access_control_map": [
-    {
-      "function_id": "EP-1",
-      "function": "deposit(...)",
-      "access": "public",
-      "modifiers": [
-        {"name": "nonReentrant", "type": "reentrancy-guard"},
-        {"name": "whenNotPaused", "type": "pausable"}
-      ]
-    },
-    {
-      "function_id": "EP-15",
-      "function": "setFeeRate(uint256 newRate)",
-      "access": "restricted",
-      "modifiers": [
-        {"name": "onlyOwner", "type": "access-control"}
-      ]
-    }
-  ]
-}
-```
+For each revocation event, record:
+- the event or function
+- what authority should disappear
+- what value must remain reserved or protected
+- what paths should stop working
+- what accounting should be recomputed or cleared
+- what alternate path may still keep the old privilege or stale state alive
+
+This matrix is a direct input to Stage 4 and Stage 5.
 
 ---
 
-### Step 5: Inheritance Hierarchy
+### Step 5: Derive Trigger Flags And Surface Flags
 
-**Map Contract Inheritance**:
-- Which contracts does this inherit from?
-- What functions are inherited?
-- Are there any shadowed/overridden functions?
+Compute `trigger_flags` with concrete evidence. These flags are used to activate vectors and question packs.
 
-**Method**:
-```
-Look for: contract Vault is ERC20, Ownable, ReentrancyGuard { ... }
-```
-
-**Output Format**:
-```json
-{
-  "inheritance": [
-    {
-      "contract": "Vault",
-      "inherits_from": [
-        "ERC20",
-        "Ownable",
-        "ReentrancyGuard"
-      ],
-      "inherited_functions": [
-        {"function": "transfer", "from": "ERC20"},
-        {"function": "transferOwnership", "from": "Ownable"}
-      ],
-      "overridden_functions": [
-        {"function": "_beforeTokenTransfer", "original_from": "ERC20"}
-      ]
-    }
-  ]
-}
-```
-
----
-
-### Step 6: Build State Dependency Graph
-
-**Visual Representation** (text-based):
-
-```
-State Variable: userBalance
-├─ Written by:
-│  ├─ deposit() → userBalance += amount
-│  └─ withdraw() → userBalance -= amount
-├─ Read by:
-│  ├─ withdraw() → checks userBalance >= amount
-│  └─ getUserBalance() → returns userBalance
-└─ Coupled with:
-   └─ totalSupply (sum relationship)
-
-State Variable: totalSupply
-├─ Written by:
-│  ├─ deposit() → totalSupply += amount
-│  └─ withdraw() → totalSupply -= amount
-├─ Read by:
-│  └─ getTotalSupply() → returns totalSupply
-└─ Coupled with:
-   └─ userBalance (sum relationship)
-```
-
-**Output Format**:
-```json
-{
-  "state_dependency_graph": [
-    {
-      "state_variable": "userBalance",
-      "type": "mapping(address => uint256)",
-      "written_by": [
-        {"function": "deposit()", "operation": "+="},
-        {"function": "withdraw()", "operation": "-="}
-      ],
-      "read_by": [
-        {"function": "withdraw()", "purpose": "balance check"},
-        {"function": "getUserBalance()", "purpose": "getter"}
-      ],
-      "coupled_with": ["totalSupply"],
-      "critical": true
-    }
-  ]
-}
-```
-
----
-
-### Step 7: Derive Trigger Flags For Stage 4
-
-Compute a `trigger_flags` object that Stage 4 can use to selectively load niche-specific vectors.
-
-**Required Flags**:
+**Keep these existing flags**:
 - `ORACLE`
 - `FLASH_LOAN`
 - `CROSS_CHAIN_MSG`
@@ -336,106 +164,130 @@ Compute a `trigger_flags` object that Stage 4 can use to selectively load niche-
 - `SHARE_ACCOUNTING`
 - `SIGNATURE_AUTH`
 
-**How To Set Flags**:
+**Add these question-pack routing flags**:
+- `BATCH_PROCESSING`
+- `PAUSE_BLACKLIST`
+- `EXTERNAL_LIQUIDITY`
+- `EMERGENCY_MODE`
+- `FAILURE_HANDLING`
 
-- `ORACLE`:
-  Enable if code calls price oracles (`latestRoundData`, TWAP helpers, custom price adapters).
-- `FLASH_LOAN`:
-  Enable if flash loan entry points/callbacks exist, or if accounting is clearly balance-dependent and atomically exploitable.
-- `CROSS_CHAIN_MSG`:
-  Enable if contracts receive, verify, relay, or consume cross-chain messages/proofs.
-- `STORAGE_LAYOUT`:
-  Enable if proxies, upgradeability, `delegatecall`, storage gaps, or manual slot usage are present.
-- `TOKEN_FLOW`:
-  Enable if protocol moves, mints, burns, escrows, or settles tokens.
-- `MIGRATION`:
-  Enable if contracts use `initialize`, `reinitialize`, versioned upgrades, migrations, legacy adapters, or V2/V3 paths.
-- `PRIVILEGED_ROLE`:
-  Enable if access extends beyond fully public calls and includes owner/admin/keeper/operator/governance/multisig actions.
-- `SHARE_ACCOUNTING`:
-  Enable if protocol uses shares, vault accounting, receipt tokens, donation-sensitive balances, or exchange-rate math.
-- `SIGNATURE_AUTH`:
-  Enable if protocol verifies signatures, RFQs, orders, permits, typed data, or uses `ecrecover`.
+**How to set the new flags**:
+- `BATCH_PROCESSING`:
+  enable if the protocol iterates over arrays/users/orders/recipients/positions, supports batched settlement, or exposes multicall-like aggregation where one item may affect the full operation.
+- `PAUSE_BLACKLIST`:
+  enable if the protocol or integrated tokens use pause, blacklist, denylist, blocklist, freeze, shutdown, or role-gated transfer restrictions.
+- `EXTERNAL_LIQUIDITY`:
+  enable if protocol logic depends on spot reserves, quote functions, AMM state, swap execution, redemption liquidity, bridge liquidity, or any thin-market assumption.
+- `EMERGENCY_MODE`:
+  enable if protocol has pause/unpause, rescue, shutdown, emergency withdraw, migration mode, or special transition logic.
+- `FAILURE_HANDLING`:
+  enable if protocol uses retry queues, `try/catch`, `continue`, best-effort loops, async settlement, or partial-failure semantics.
 
-**Output Format**:
-```json
-{
-  "trigger_flags": {
-    "ORACLE": {"enabled": true, "evidence": ["oracle.latestRoundData()"]},
-    "FLASH_LOAN": {"enabled": false, "evidence": []},
-    "CROSS_CHAIN_MSG": {"enabled": false, "evidence": []},
-    "STORAGE_LAYOUT": {"enabled": true, "evidence": ["UUPSUpgradeable"]},
-    "TOKEN_FLOW": {"enabled": true, "evidence": ["token.transferFrom()", "_mint()"]},
-    "MIGRATION": {"enabled": false, "evidence": []},
-    "PRIVILEGED_ROLE": {"enabled": true, "evidence": ["onlyOwner"]},
-    "SHARE_ACCOUNTING": {"enabled": true, "evidence": ["convertToShares()", "totalAssets()"]},
-    "SIGNATURE_AUTH": {"enabled": false, "evidence": []}
-  }
-}
-```
+Every flag must include evidence strings.
 
 ---
 
-## Critical Analysis: Desync Vulnerability Detection
+### Step 6: Preliminary Red Flags
 
-**Look for these RED FLAGS**:
+Before handing off, identify candidate red flags such as:
+- asymmetric state updates
+- cap updates on some paths but not others
+- preview/accounting interface mismatch risk
+- one-item-reverts-all batch behavior
+- blacklist / pause on external token could brick a shared flow
+- low-liquidity assumption on externally sourced prices or quotes
+- emergency path that bypasses normal accounting cleanup
+- retry path that drops, duplicates, or masks liability
+- revoked role that still influences state through a second path
 
-❌ **Asymmetric Updates**:
-```solidity
-function deposit() {
-    userBalance[msg.sender] += amount;
-    totalSupply += amount;  // Both updated ✓
-}
+These are not final findings. They are high-priority routes for Stage 4 and Stage 5.
 
-function specialDeposit() {
-    userBalance[msg.sender] += amount;
-    // totalSupply NOT updated ❌ DESYNC!
-}
-```
+---
 
-❌ **Conditional Desync**:
-```solidity
-function withdraw() {
-    if (special Condition) {
-        userBalance[msg.sender] -= amount;
-        // totalSupply not updated in this path ❌
-    } else {
-        userBalance[msg.sender] -= amount;
-        totalSupply -= amount;
+## Output Format
+
+```json
+{
+  "entry_points": [
+    {
+      "id": "EP-1",
+      "function_signature": "deposit(address token, uint256 amount)",
+      "contract": "Vault.sol",
+      "visibility": "external",
+      "modifiers": ["nonReentrant", "whenNotPaused"],
+      "classification": ["user-facing", "token-flow"]
     }
-}
-```
-
-❌ **Revert Before Full Update**:
-```solidity
-function claim() {
-    userBalance[msg.sender] = 0;
-    externalCall();  // May revert
-    totalSupply -= oldBalance;  // Never reached if revert ❌
-}
-```
-
-**Flag These for Stage 5 (Deep Thinker) Analysis!**
-
----
-
-## Final Output (Complete JSON)
-
-```json
-{
-  "entry_points": [...],
-  "function_state_matrix": [...],
-  "coupled_state_pairs": [...],
-  "access_control_map": [...],
-  "inheritance": [...],
-  "state_dependency_graph": [...],
-  "trigger_flags": {...},
+  ],
+  "function_state_matrix": [
+    {
+      "function_id": "EP-1",
+      "function": "deposit(address token, uint256 amount)",
+      "state_reads": ["totalAssets", "totalSupply"],
+      "state_writes": ["userShares[msg.sender]", "totalSupply"],
+      "external_calls": ["token.transferFrom()"],
+      "special_behaviors": ["token-flow", "share-accounting"]
+    }
+  ],
+  "invariant_map": {
+    "conservation_laws": [
+      {
+        "id": "INV-C-1",
+        "invariant": "tracked assets must equal realizable assets",
+        "variables": ["totalAssets", "address(this) balance", "strategyDebt"],
+        "writers": ["deposit()", "withdraw()", "report()"],
+        "enforcement": "assumed"
+      }
+    ],
+    "state_couplings": [
+      {
+        "id": "INV-S-1",
+        "variables": ["userStaked", "rewardDebt"],
+        "relationship": "must update together",
+        "writers": ["stake()", "unstake()", "claim()"]
+      }
+    ],
+    "capacity_constraints": [
+      {
+        "id": "INV-K-1",
+        "value": "totalBorrowed",
+        "limit": "borrowCap",
+        "enforced_in": ["borrow()"],
+        "other_writers": ["liquidationSettlement()"]
+      }
+    ],
+    "interface_guarantees": [
+      {
+        "id": "INV-I-1",
+        "guarantee": "previewWithdraw() must match withdraw() realized assets",
+        "exposed_at": ["previewWithdraw()"],
+        "must_be_preserved_by": ["withdraw()", "reportLoss()"]
+      }
+    ]
+  },
+  "revocation_matrix": [
+    {
+      "event": "pause()",
+      "authority_removed": ["normal user deposits"],
+      "value_that_must_remain_protected": ["pending withdrawals"],
+      "paths_that_should_stop": ["deposit()", "rebalance()"],
+      "accounting_that_must_stay_coherent": ["queued withdrawal liabilities"],
+      "stale_state_risk": ["pauseable settlement asset can still poison shared queue"]
+    }
+  ],
+  "trigger_flags": {
+    "TOKEN_FLOW": {"enabled": true, "evidence": ["token.transferFrom()", "_mint()"]},
+    "SHARE_ACCOUNTING": {"enabled": true, "evidence": ["convertToShares()", "totalAssets()"]},
+    "BATCH_PROCESSING": {"enabled": true, "evidence": ["for (...) recipients[i]", "processBatch()"]},
+    "PAUSE_BLACKLIST": {"enabled": true, "evidence": ["whenNotPaused", "blacklist mapping"]},
+    "EXTERNAL_LIQUIDITY": {"enabled": true, "evidence": ["getReserves()", "quoteExactInput()"]},
+    "EMERGENCY_MODE": {"enabled": true, "evidence": ["pause()", "emergencyWithdraw()"]},
+    "FAILURE_HANDLING": {"enabled": true, "evidence": ["try/catch", "retryQueue"]}
+  },
   "preliminary_red_flags": [
     {
-      "type": "asymmetric-update",
-      "description": "Function X updates userBalance but not totalSupply",
-      "functions": ["specialDeposit()"],
-      "severity": "potential-critical"
+      "type": "batch-poison-pill",
+      "description": "Single failing recipient may revert entire processing loop",
+      "functions": ["distributeRewards()"]
     }
   ]
 }
@@ -445,29 +297,15 @@ function claim() {
 
 ## Validation Checklist
 
-Before finishing:
-- [ ] All external/public functions identified
-- [ ] State reads/writes tracked for each function
-- [ ] Coupled state pairs identified (at least 2-3)
-- [ ] Access control modifiers documented
-- [ ] Inheritance hierarchy mapped
-- [ ] Trigger flags derived with concrete evidence
-- [ ] Preliminary red flags noted
+- [ ] All external/public/callback/emergency entry points identified
+- [ ] State reads/writes/external calls traced for each entry point
+- [ ] Invariant map filled across all four invariant families
+- [ ] Revocation matrix identifies lifecycle and authority transitions
+- [ ] Trigger flags include both niche vectors and question-pack surfaces
+- [ ] Preliminary red flags noted with evidence
 
 ---
 
-## Special Notes
+## Final Rule
 
-**Coupled State Pairs are CRITICAL for Stage 5**:
-- These will be used to detect state desync bugs
-- This is how deep state analysis works
-- Missing coupled pairs = missing entire bug classes
-
-**Function-State Matrix enables**:
-- Reentrancy analysis (does state update before external call?)
-- Access control verification (are privileged operations protected?)
-- State inconsistency detection (do all paths update coupled states?)
-
----
-
-**Output this complete JSON object and pass to Stage 4 (Pattern Matcher).**
+Do not stop at naming variables. Produce the invariant relationships, revocation events, and concrete writers/readers that Stage 4 and Stage 5 can attack.

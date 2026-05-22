@@ -1,6 +1,6 @@
 # Slayer Security Auditor
 
-Elite Solidity security auditor combining **broad attack-vector coverage**, **deep state analysis**, **Solodit real-world intelligence**, and **adversarial validation** for maximum bug detection with minimal false positives.
+Elite Solidity security auditor combining **surface-led analysis**, **repo-derived threat modeling**, **invariant breaking**, **Solodit real-world intelligence**, and **adversarial validation** for maximum bug detection with minimal false positives.
 
 ---
 
@@ -11,17 +11,21 @@ Slayer Security Auditor performs an **8-stage automated security audit** on Soli
 | Stage | Agent | Purpose |
 |-------|-------|---------|
 | 1 | Setup | Filter test files, identify scope |
-| 2 | Protocol Analyzer | Extract invariants from docs |
-| 3 | Entry Mapper | Map state dependencies from entry points |
-| 4 | Pattern Matcher | Scan 170+ attack vectors |
-| 5 | Deep Thinker | Deep protocol logic analysis |
+| 2 | Protocol Analyzer | Build a repo truth sheet, invariants, and threat model from docs |
+| 3 | Entry Mapper | Map state dependencies, revocation events, invariants, and surface flags |
+| 4 | Surface Interrogator | Force human-style question loops on active exploit surfaces |
+| 5 | Deep Thinker | Break invariants and synthesize concrete exploit paths |
 | 6 | Solodit Validation | Historical exploit enrichment via Solodit MCP |
 | 7 | Final Validator | Known-issue screening, verification, and adversarial review |
 | 8 | Report | Generate findings and audit artifacts |
 
 ### Key Features
 
-- **170+ Attack Vectors**: Broad vulnerability coverage across common smart contract failure modes
+- **Surface-Led Analysis**: Vectors trigger mandatory interrogation instead of acting as direct findings
+- **Repo Truth Sheet**: Threat model, lifecycle states, limitations, and repo-known issues are extracted before bug hunting
+- **Invariant And Revocation Breaking**: Conservation laws, couplings, caps, interface guarantees, and revocation promises are attacked explicitly
+- **Rejection Memory**: Dead ideas are logged so the audit stops revisiting noise
+- **Exploitability Discipline**: Findings must name a reachable unwanted state, attacker capability, and why the issue is not just noise
 - **24 ERC20 Variants**: Catches USDT, DAI permit, fee-on-transfer, rebasing issues
 - **Solodit Integration**: Verifies findings against real-world exploits
 - **Known Issue Detection**: Filters documented issues from reports
@@ -137,10 +141,12 @@ Or use natural language:
 - Cross-chain and L2 vulnerabilities
 
 **Deep Logic Analysis**:
-- State desync between coupled variables
-- Multi-transaction attack sequences
-- Hidden assumptions in code
-- Economic incentive analysis
+- Broken conservation laws and state couplings
+- Batch poison-pill and shared-loop failures
+- Pause / blacklist / emergency-transition breakage
+- External-liquidity and realizable-value assumption failures
+- Privilege persistence after revocation or lifecycle transitions
+- Failure-handling and retry-path liability breakage
 
 **Integration Bugs**:
 - 24 ERC20 variants (USDT, DAI permit, fee-on-transfer, rebasing)
@@ -165,6 +171,9 @@ Protocol claims "supports all ERC20" but doesn't check balance
 difference after transfer, breaking with fee-on-transfer tokens.
 
 **Broken Invariant**: totalReceived == totalTracked
+
+**Exploitability**:
+Untrusted user can choose a supported fee-on-transfer asset and extract the accounting mismatch without needing privileged help.
 
 **Exploit Path**:
 1. Attacker deposits 100 STA tokens (1% fee)
@@ -201,15 +210,26 @@ For real-world exploit verification, configure Solodit MCP:
 
 The workflow assumes `SOLODIT_API_KEY` may be present in the environment. If the MCP is unavailable, auth is missing, or rate limits are hit, the audit silently skips Solodit enrichment and continues.
 
-### Attack Vector Layers
+### Attack Vector Layers And Question Packs
 
-Stage 4 now uses four layers:
+Stage 4 now uses four vector layers:
 - `references/attack-vectors/attack-vectors.md` for core stable vectors
 - `references/attack-vectors/custom-attack-vectors.md` for team/user-defined vectors
 - `references/attack-vectors/live-hack-db/live-hack-vectors.md` for mechanics distilled from real hacks in `references/hacks.csv`
 - `references/attack-vectors/niche-specific/specialized-vectors.md` for trigger-gated deep checks
 
-The pattern matcher always loads core, custom, and live-hack-db vectors. It only loads niche-specific vectors when Stage 3 trigger flags indicate the protocol surface is relevant.
+Those vectors now act as routing inputs. Stage 4 uses them together with Stage 3 surface flags to force mandatory question packs instead of emitting findings directly.
+
+Current question packs:
+- `references/question-packs/batch-processing.md`
+- `references/question-packs/pause-blacklist-lifecycle.md`
+- `references/question-packs/external-liquidity-assumptions.md`
+
+Workflow controls:
+- `references/workflow/protocol-truths.md`
+- `references/workflow/killed-ideas-ledger.md`
+- `references/workflow/exploitability-gates.md`
+- `references/workflow/human-audit-loop.md`
 
 The `references/integrations/` files remain as supporting research references. Stage 4 does not treat them as primary scan layers anymore.
 
@@ -259,6 +279,15 @@ slayer-security-ai-auditor/
     │   ├── erc20-variants.md (24 patterns)
     │   ├── chainlink-oracles.md
     │   └── protocol-integration-patterns.md
+    ├── question-packs/
+    │   ├── batch-processing.md
+    │   ├── pause-blacklist-lifecycle.md
+    │   └── external-liquidity-assumptions.md
+    ├── workflow/
+    │   ├── protocol-truths.md
+    │   ├── killed-ideas-ledger.md
+    │   ├── exploitability-gates.md
+    │   └── human-audit-loop.md
     ├── safe-patterns.md
     ├── judging.md
     └── report-formatting.md
