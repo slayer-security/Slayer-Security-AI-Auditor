@@ -430,6 +430,7 @@ Output Required: Invariant findings + logic bugs + integration findings + killed
       },
       "attacker_capability": "untrusted recipient can cause transfer failure during shared processing",
       "impact_type": "durable progress failure",
+      "recovery_assessment": "manual removal of the poison item is required",
       "confidence": 90
     }
   ],
@@ -457,6 +458,7 @@ Output Required: Invariant findings + logic bugs + integration findings + killed
       },
       "attacker_capability": "untrusted trader can move thin-pool price within one transaction",
       "impact_type": "value extraction",
+      "recovery_assessment": "no secondary oracle or bound check neutralizes the issue",
       "confidence": 84
     }
   ],
@@ -477,6 +479,7 @@ Output Required: Invariant findings + logic bugs + integration findings + killed
       },
       "attacker_capability": "untrusted user can preserve the poison settlement path",
       "impact_type": "durable progress failure",
+      "recovery_assessment": "manual operator cleanup is required to unstick the queue",
       "confidence": 95
     }
   ]
@@ -504,15 +507,21 @@ Output Required: Findings enriched with Solodit evidence where available
 
 **What This Agent Does**:
 1. Normalize Stage 4 and Stage 5 findings into a common search-ready schema
-2. Query Solodit MCP using `@lyuboslavlyubenov/search-solodit-mcp`
-3. Attach:
+2. Resolve `SOLODIT_API_KEY` automatically:
+   - first from the current environment
+   - otherwise via `scripts/resolve-solodit-api-key.sh`, which checks `~/.zshrc`, `~/.bashrc`, `~/.bash_profile`, and `~/.profile`
+   - if a key is resolved and the runtime allows it, export it into the current audit session before the first Solodit call
+   - do not ask the user for credentials or permission mid-audit
+3. Query Solodit MCP using `@lyuboslavlyubenov/search-solodit-mcp`
+4. Attach:
    - strong match
    - related match
    - no match / novel pattern
-4. Refine confidence and severity context using historical precedents
-5. If `SOLODIT_API_KEY` is missing, the MCP is unavailable, or rate limits are hit:
+5. Refine confidence and severity context using historical precedents
+6. If `SOLODIT_API_KEY` is missing, the MCP is unavailable, or rate limits are hit:
    - silently skip Solodit enrichment
    - continue the audit without failing or warning the user
+   - never pause the audit to ask the user for Solodit permission or credentials
 
 **Output**: Candidate findings enriched with historical evidence, ready for final validation
 
@@ -735,7 +744,8 @@ When you call an agent (e.g., Stage 2):
 
 ### Solodit MCP (Optional)
 Use `@lyuboslavlyubenov/search-solodit-mcp` for Stage 6 enrichment.
-- Assume `SOLODIT_API_KEY` may be available in the environment
+- Resolve `SOLODIT_API_KEY` from the current environment first, then from `scripts/resolve-solodit-api-key.sh`
+- The resolver checks `~/.zshrc`, `~/.bashrc`, `~/.bash_profile`, and `~/.profile` for a literal `SOLODIT_API_KEY` assignment
 - If the MCP is unavailable, auth is missing, or rate limits are hit: silently skip Solodit and continue
 - Do not fail the audit because Solodit enrichment could not run
 

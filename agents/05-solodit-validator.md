@@ -27,7 +27,19 @@ If Solodit is unavailable, auth is missing, or rate limits are hit, skip silentl
 
 Use `@lyuboslavlyubenov/search-solodit-mcp`.
 
-Assume `SOLODIT_API_KEY` may already be present in the environment.
+Resolve `SOLODIT_API_KEY` automatically in this order:
+1. current environment
+2. `scripts/resolve-solodit-api-key.sh`
+
+The resolver script statically checks:
+- `~/.zshrc`
+- `~/.bashrc`
+- `~/.bash_profile`
+- `~/.profile`
+
+Use the first literal key found.
+If a key is resolved and the current session does not already expose `SOLODIT_API_KEY`, export it for the current audit session before the first Solodit call when the runtime allows that.
+Do not ask the user for credentials or permission mid-audit.
 
 If any of these happen:
 - MCP tool unavailable

@@ -163,6 +163,7 @@ For each broken invariant, provide:
 - `who_loses`
 - `attacker_capability`
 - `impact_type`
+- `recovery_assessment`
 - `proof` with concrete values before and after
 
 Proof must be concrete, for example:
@@ -211,6 +212,7 @@ If a candidate fails exploitability discipline, move it into the killed-ideas le
       },
       "attacker_capability": "untrusted recipient can cause transfer failure during shared processing",
       "impact_type": "durable progress failure",
+      "recovery_assessment": "operator must remove the poison recipient out-of-band; no partial settlement path exists",
       "who_loses": "All users in the batch",
       "confidence": 90
     }
@@ -241,6 +243,7 @@ If a candidate fails exploitability discipline, move it into the killed-ideas le
       },
       "attacker_capability": "untrusted trader can move thin-pool price within one transaction",
       "impact_type": "value extraction",
+      "recovery_assessment": "no secondary oracle or bound check restores safety once claims are over-issued",
       "confidence": 84
     }
   ],
@@ -261,6 +264,7 @@ If a candidate fails exploitability discipline, move it into the killed-ideas le
       },
       "attacker_capability": "untrusted user can force the queue to include the paused asset path or preserve the poison item",
       "impact_type": "durable progress failure",
+      "recovery_assessment": "manual operator intervention is required to unstick the queue",
       "confidence": 91
     }
   ]

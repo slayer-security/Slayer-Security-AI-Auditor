@@ -28,7 +28,7 @@ Slayer Security Auditor performs an **8-stage automated security audit** on Soli
 - **Exploitability Discipline**: Findings must name a reachable unwanted state, attacker capability, and why the issue is not just noise
 - **24 ERC20 Variants**: Catches USDT, DAI permit, fee-on-transfer, rebasing issues
 - **Solodit Integration**: Verifies findings against real-world exploits
-- **Known Issue Detection**: Filters documented issues from reports
+- **Known Issue Detection**: Filters repo-documented issues and unsupported cases from reports
 - **Zero False Positive Goal**: Dedicated historical enrichment plus unified final validation
 
 ---
@@ -210,6 +210,19 @@ For real-world exploit verification, configure Solodit MCP:
 
 The workflow assumes `SOLODIT_API_KEY` may be present in the environment. If the MCP is unavailable, auth is missing, or rate limits are hit, the audit silently skips Solodit enrichment and continues.
 
+During Stage 6, the skill resolves the key automatically in this order:
+1. current environment
+2. `scripts/resolve-solodit-api-key.sh`
+
+The resolver script statically checks:
+- `~/.zshrc`
+- `~/.bashrc`
+- `~/.bash_profile`
+- `~/.profile`
+
+It accepts literal `SOLODIT_API_KEY=...` assignments and does not prompt the user mid-audit. If no key is found or the MCP still cannot authenticate, Solodit is skipped silently.
+If the runtime allows session-local env updates, the resolved key is exported automatically before the first Solodit call.
+
 ### Attack Vector Layers And Question Packs
 
 Stage 4 now uses four vector layers:
@@ -264,6 +277,8 @@ slayer-security-ai-auditor/
 │   ├── 04-deep-thinker.md
 │   ├── 05-solodit-validator.md
 │   └── 06-validator.md
+├── scripts/
+│   └── resolve-solodit-api-key.sh
 └── references/
     ├── attack-vectors/
     │   ├── attack-vectors.md (core vectors)
